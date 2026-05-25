@@ -514,8 +514,7 @@ function startGame() {
   game.levelIntroTimer = 120; // ~2 seconds
   // Restart background music from the beginning
   if (audioReady) {
-    bgMusic.currentTime = 0;
-    bgMusic.play().catch(() => {});
+    startBgMusic();
   }
 }
 
@@ -1557,7 +1556,7 @@ function update() {
         game.state = STATE.GAME_OVER;
         if (game.score > game.highScore) game.highScore = game.score;
         stopShipEngine();
-        bgMusic.pause();
+        stopBgMusic();
         playGameOver();
       } else {
         game.player.alive = true;
@@ -2940,74 +2939,137 @@ function render() {
 }
 
 // ------------------------------------------------------------
-// SECTION 23: AUDIO SYSTEM (MP3 Samples)
+// SECTION 23: AUDIO SYSTEM (Web Audio API)
 // ------------------------------------------------------------
 
 let audioReady = false;
+let audioCtx = null;
+const audioBuffers = {};
+let bgMusicSource = null;
+let bgMusicBuffer = null;
+let shipEngineSource = null;
+let shipEngineBuffer = null;
+let activeFreezeCountdownSource = null;
 
-// Sound effect pool — each key maps to a preloaded Audio element.
-// For sounds that may overlap, we clone on play.
-const SFX = {
-  hop:            new Audio('assets/sfx/q-land.mp3'),
-  convert:        new Audio('assets/sfx/cube-convert.mp3'),
-  tentacleWarn:   new Audio('assets/sfx/tentacle-warn.mp3'),
-  death:          new Audio('assets/sfx/player-death.mp3'),
-  levelClear:     new Audio('assets/sfx/level-clear.mp3'),
-  gameOver:       new Audio('assets/sfx/game-over.mp3'),
-  collectible:    new Audio('assets/sfx/collectible-grab.mp3'),
-  freezeCountdown:new Audio('assets/sfx/freeze-countdown.mp3'),
-  splash:         new Audio('assets/sfx/splash.mp3'),
-  cannonFire:     new Audio('assets/sfx/cannon-fire.mp3'),
-  nightGauntGrab: new Audio('assets/sfx/night-gaunt-grab.mp3'),
-  nightGauntRise: new Audio('assets/sfx/night-gaunt-rise.mp3'),
-  enemyDestroy:   new Audio('assets/sfx/enemy-destroy.mp3'),
-  extraLife:      new Audio('assets/sfx/extra-life.mp3'),
-  // Enemy spawn sounds
-  deeponeSpawn:   new Audio('assets/sfx/deep-one-spawn.mp3'),
-  migoSpawn:      new Audio('assets/sfx/mi-go-spawn.mp3'),
-  shoggothSpawn:  new Audio('assets/sfx/shoggoth-spawn.mp3'),
-  starspawnSpawn: new Audio('assets/sfx/star-spawn-spawn.mp3'),
-  cultistSpawn:   new Audio('assets/sfx/cultist-spawn.mp3'),
-  // Enemy land sounds
-  deeponeLand:    new Audio('assets/sfx/deep-one-land.mp3'),
-  migoLand:       new Audio('assets/sfx/mi-go-land.mp3'),
-  shoggothLand:   new Audio('assets/sfx/shoggoth-land.mp3'),
-  starspawnLand:  new Audio('assets/sfx/star-spawn-land.mp3'),
-  cultistLand:    new Audio('assets/sfx/cultist-land.mp3')
+// Master volumes
+const SFX_VOLUME = 0.35;
+const BG_MUSIC_VOLUME = 0.7;
+const SHIP_ENGINE_VOLUME = 0.12;
+
+// Sound file paths
+const SFX_PATHS = {
+  hop:            'assets/sfx/q-land.mp3',
+  convert:        'assets/sfx/cube-convert.mp3',
+  tentacleWarn:   'assets/sfx/tentacle-warn.mp3',
+  death:          'assets/sfx/player-death.mp3',
+  levelClear:     'assets/sfx/level-clear.mp3',
+  gameOver:       'assets/sfx/game-over.mp3',
+  collectible:    'assets/sfx/collectible-grab.mp3',
+  freezeCountdown:'assets/sfx/freeze-countdown.mp3',
+  splash:         'assets/sfx/splash.mp3',
+  cannonFire:     'assets/sfx/cannon-fire.mp3',
+  nightGauntGrab: 'assets/sfx/night-gaunt-grab.mp3',
+  nightGauntRise: 'assets/sfx/night-gaunt-rise.mp3',
+  enemyDestroy:   'assets/sfx/enemy-destroy.mp3',
+  extraLife:      'assets/sfx/extra-life.mp3',
+  deeponeSpawn:   'assets/sfx/deep-one-spawn.mp3',
+  migoSpawn:      'assets/sfx/mi-go-spawn.mp3',
+  shoggothSpawn:  'assets/sfx/shoggoth-spawn.mp3',
+  starspawnSpawn: 'assets/sfx/star-spawn-spawn.mp3',
+  cultistSpawn:   'assets/sfx/cultist-spawn.mp3',
+  deeponeLand:    'assets/sfx/deep-one-land.mp3',
+  migoLand:       'assets/sfx/mi-go-land.mp3',
+  shoggothLand:   'assets/sfx/shoggoth-land.mp3',
+  starspawnLand:  'assets/sfx/star-spawn-land.mp3',
+  cultistLand:    'assets/sfx/cultist-land.mp3'
 };
 
-// Looping sounds (ship engine, background music)
-const shipEngineAudio = new Audio('assets/sfx/ship-engine.mp3');
-shipEngineAudio.loop = true;
-shipEngineAudio.volume = 0.12;
-
-const bgMusic = new Audio('assets/sfx/bg-music.mp3');
-bgMusic.loop = true;
-bgMusic.volume = 0.7;
-
-// Preload all sounds
-Object.values(SFX).forEach(a => { a.preload = 'auto'; a.load(); });
-shipEngineAudio.preload = 'auto'; shipEngineAudio.load();
-bgMusic.preload = 'auto'; bgMusic.load();
-
-function initAudio() {
-  if (audioReady) return;
-  audioReady = true;
-  // Start background music on first interaction
-  bgMusic.play().catch(() => {});
+async function loadAudioBuffer(url) {
+  try {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    return await audioCtx.decodeAudioData(arrayBuffer);
+  } catch (e) {
+    return null;
+  }
 }
 
-// Play a one-shot sound effect (clones to allow overlapping playback)
-const SFX_VOLUME = 0.35; // master volume for all one-shot SFX
-let activeFreezeCountdown = null; // reference to stop on level clear
+async function initAudio() {
+  if (audioReady) return;
+  audioReady = true;
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  // Resume context (required for iOS)
+  if (audioCtx.state === 'suspended') {
+    await audioCtx.resume();
+  }
+
+  // Load all SFX buffers
+  const loadPromises = Object.entries(SFX_PATHS).map(async ([key, path]) => {
+    audioBuffers[key] = await loadAudioBuffer(path);
+  });
+
+  // Load bg music and ship engine
+  const bgPromise = loadAudioBuffer('assets/sfx/bg-music.mp3').then(buf => { bgMusicBuffer = buf; });
+  const shipPromise = loadAudioBuffer('assets/sfx/ship-engine.mp3').then(buf => { shipEngineBuffer = buf; });
+
+  await Promise.all([...loadPromises, bgPromise, shipPromise]);
+
+  // Start background music
+  startBgMusic();
+}
+
 function playSfx(key, volume) {
-  if (!audioReady) return;
-  const src = SFX[key];
-  if (!src) return;
-  const sound = src.cloneNode();
-  sound.volume = volume !== undefined ? volume : SFX_VOLUME;
-  sound.play().catch(() => {});
-  return sound;
+  if (!audioReady || !audioCtx || !audioBuffers[key]) return null;
+  const source = audioCtx.createBufferSource();
+  source.buffer = audioBuffers[key];
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = volume !== undefined ? volume : SFX_VOLUME;
+  source.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  source.start(0);
+  return source;
+}
+
+function startBgMusic() {
+  if (!audioCtx || !bgMusicBuffer) return;
+  stopBgMusic();
+  bgMusicSource = audioCtx.createBufferSource();
+  bgMusicSource.buffer = bgMusicBuffer;
+  bgMusicSource.loop = true;
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = BG_MUSIC_VOLUME;
+  bgMusicSource.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  bgMusicSource.start(0);
+}
+
+function stopBgMusic() {
+  if (bgMusicSource) {
+    try { bgMusicSource.stop(); } catch (e) {}
+    bgMusicSource = null;
+  }
+}
+
+function startShipEngine() {
+  if (!audioCtx || !shipEngineBuffer) return;
+  stopShipEngine();
+  shipEngineSource = audioCtx.createBufferSource();
+  shipEngineSource.buffer = shipEngineBuffer;
+  shipEngineSource.loop = true;
+  const gainNode = audioCtx.createGain();
+  gainNode.gain.value = SHIP_ENGINE_VOLUME;
+  shipEngineSource.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  shipEngineSource.start(0);
+}
+
+function stopShipEngine() {
+  if (shipEngineSource) {
+    try { shipEngineSource.stop(); } catch (e) {}
+    shipEngineSource = null;
+  }
 }
 
 function playHop() { playSfx('hop', 0.15); }
@@ -3017,38 +3079,24 @@ function playDeath() { playSfx('death', 0.2); }
 function playLevelClear() { playSfx('levelClear'); }
 function playGameOver() { playSfx('gameOver'); }
 function playCollectible() { playSfx('collectible', 0.6); }
-function playFreezeCountdown() { activeFreezeCountdown = playSfx('freezeCountdown'); }
-function stopFreezeCountdown() { if (activeFreezeCountdown) { activeFreezeCountdown.pause(); activeFreezeCountdown = null; } }
+function playFreezeCountdown() { activeFreezeCountdownSource = playSfx('freezeCountdown'); }
+function stopFreezeCountdown() { if (activeFreezeCountdownSource) { try { activeFreezeCountdownSource.stop(); } catch(e) {} activeFreezeCountdownSource = null; } }
 function playSplash() { playSfx('splash'); }
 function playCannonFire() { playSfx('cannonFire'); }
-function playExplosion() { playSfx('cannonFire', 0.5); } // reuse cannon sound for explosion
+function playExplosion() { playSfx('cannonFire', 0.5); }
 function playNightGauntGrab() { playSfx('nightGauntGrab'); }
 function playNightGauntRise() { playSfx('nightGauntRise'); }
 function playEnemyDestroy() { playSfx('enemyDestroy'); }
 function playExtraLife() { playSfx('extraLife', 0.5); }
 
-// Unique spawn sounds per enemy type
 function playEnemySpawn(type) {
   const map = { deepone: 'deeponeSpawn', migo: 'migoSpawn', shoggoth: 'shoggothSpawn', starspawn: 'starspawnSpawn', cultist: 'cultistSpawn' };
   if (map[type]) playSfx(map[type]);
 }
 
-// Unique landing sounds per enemy type
 function playEnemyLand(type) {
   const map = { deepone: 'deeponeLand', migo: 'migoLand', shoggoth: 'shoggothLand', starspawn: 'starspawnLand', cultist: 'cultistLand' };
   if (map[type]) playSfx(map[type]);
-}
-
-// Ship engine sound (looping while ship is on screen)
-function startShipEngine() {
-  if (!audioReady) return;
-  shipEngineAudio.currentTime = 0;
-  shipEngineAudio.play().catch(() => {});
-}
-
-function stopShipEngine() {
-  shipEngineAudio.pause();
-  shipEngineAudio.currentTime = 0;
 }
 
 // ------------------------------------------------------------
