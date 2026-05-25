@@ -2939,22 +2939,21 @@ function render() {
 }
 
 // ------------------------------------------------------------
-// SECTION 23: AUDIO SYSTEM (Web Audio API)
+// SECTION 23: AUDIO SYSTEM (iOS-compatible Audio Pool)
 // ------------------------------------------------------------
 
 let audioReady = false;
-let audioCtx = null;
-const audioBuffers = {};
-let bgMusicSource = null;
-let bgMusicBuffer = null;
-let shipEngineSource = null;
-let shipEngineBuffer = null;
-let activeFreezeCountdownSource = null;
+let activeFreezeSound = null;
 
-// Master volumes
-const SFX_VOLUME = 0.35;
-const BG_MUSIC_VOLUME = 0.7;
-const SHIP_ENGINE_VOLUME = 0.12;
+// Audio pool: pre-create a fixed number of Audio elements and reuse them.
+// iOS Safari limits simultaneous Audio elements, so we cycle through a pool.
+const AUDIO_POOL_SIZE = 8;
+const audioPool = [];
+let audioPoolIndex = 0;
+
+for (let i = 0; i < AUDIO_POOL_SIZE; i++) {
+  audioPool.push(new Audio());
+}
 
 // Sound file paths
 const SFX_PATHS = {
@@ -2984,92 +2983,76 @@ const SFX_PATHS = {
   cultistLand:    'assets/sfx/cultist-land.mp3'
 };
 
-async function loadAudioBuffer(url) {
-  try {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    return await audioCtx.decodeAudioData(arrayBuffer);
-  } catch (e) {
-    return null;
-  }
-}
+// Background music and ship engine (dedicated elements)
+const bgMusic = new Audio('assets/sfx/bg-music.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.7;
+bgMusic.preload = 'auto';
 
-async function initAudio() {
+const shipEngineAudio = new Audio('assets/sfx/ship-engine.mp3');
+shipEngineAudio.loop = true;
+shipEngineAudio.volume = 0.12;
+shipEngineAudio.preload = 'auto';
+
+// Unlock audio on iOS: play a silent buffer on all pool elements + music
+function initAudio() {
   if (audioReady) return;
   audioReady = true;
 
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-  // Resume context (required for iOS)
-  if (audioCtx.state === 'suspended') {
-    await audioCtx.resume();
-  }
-
-  // Load all SFX buffers
-  const loadPromises = Object.entries(SFX_PATHS).map(async ([key, path]) => {
-    audioBuffers[key] = await loadAudioBuffer(path);
+  // "Unlock" each pool element by playing and immediately pausing
+  audioPool.forEach(a => {
+    a.muted = true;
+    a.play().then(() => { a.pause(); a.muted = false; a.currentTime = 0; }).catch(() => { a.muted = false; });
   });
 
-  // Load bg music and ship engine
-  const bgPromise = loadAudioBuffer('assets/sfx/bg-music.mp3').then(buf => { bgMusicBuffer = buf; });
-  const shipPromise = loadAudioBuffer('assets/sfx/ship-engine.mp3').then(buf => { shipEngineBuffer = buf; });
+  // Unlock and start bg music
+  bgMusic.play().catch(() => {});
 
-  await Promise.all([...loadPromises, bgPromise, shipPromise]);
-
-  // Start background music
-  startBgMusic();
+  // Unlock ship engine (don't start it yet)
+  shipEngineAudio.muted = true;
+  shipEngineAudio.play().then(() => { shipEngineAudio.pause(); shipEngineAudio.muted = false; shipEngineAudio.currentTime = 0; }).catch(() => { shipEngineAudio.muted = false; });
 }
 
+// Master volume
+const SFX_VOLUME = 0.35;
+
 function playSfx(key, volume) {
-  if (!audioReady || !audioCtx || !audioBuffers[key]) return null;
-  const source = audioCtx.createBufferSource();
-  source.buffer = audioBuffers[key];
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = volume !== undefined ? volume : SFX_VOLUME;
-  source.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-  source.start(0);
-  return source;
+  if (!audioReady) return null;
+  const path = SFX_PATHS[key];
+  if (!path) return null;
+
+  // Get next audio element from pool
+  const sound = audioPool[audioPoolIndex];
+  audioPoolIndex = (audioPoolIndex + 1) % AUDIO_POOL_SIZE;
+
+  sound.pause();
+  sound.currentTime = 0;
+  sound.src = path;
+  sound.volume = volume !== undefined ? volume : SFX_VOLUME;
+  sound.play().catch(() => {});
+  return sound;
 }
 
 function startBgMusic() {
-  if (!audioCtx || !bgMusicBuffer) return;
-  stopBgMusic();
-  bgMusicSource = audioCtx.createBufferSource();
-  bgMusicSource.buffer = bgMusicBuffer;
-  bgMusicSource.loop = true;
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = BG_MUSIC_VOLUME;
-  bgMusicSource.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-  bgMusicSource.start(0);
+  if (!audioReady) return;
+  bgMusic.currentTime = 0;
+  bgMusic.play().catch(() => {});
 }
 
 function stopBgMusic() {
-  if (bgMusicSource) {
-    try { bgMusicSource.stop(); } catch (e) {}
-    bgMusicSource = null;
-  }
+  bgMusic.pause();
+  bgMusic.currentTime = 0;
 }
 
 function startShipEngine() {
-  if (!audioCtx || !shipEngineBuffer) return;
-  stopShipEngine();
-  shipEngineSource = audioCtx.createBufferSource();
-  shipEngineSource.buffer = shipEngineBuffer;
-  shipEngineSource.loop = true;
-  const gainNode = audioCtx.createGain();
-  gainNode.gain.value = SHIP_ENGINE_VOLUME;
-  shipEngineSource.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-  shipEngineSource.start(0);
+  if (!audioReady) return;
+  shipEngineAudio.currentTime = 0;
+  shipEngineAudio.play().catch(() => {});
 }
 
 function stopShipEngine() {
-  if (shipEngineSource) {
-    try { shipEngineSource.stop(); } catch (e) {}
-    shipEngineSource = null;
-  }
+  shipEngineAudio.pause();
+  shipEngineAudio.currentTime = 0;
 }
 
 function playHop() { playSfx('hop', 0.15); }
@@ -3079,8 +3062,8 @@ function playDeath() { playSfx('death', 0.2); }
 function playLevelClear() { playSfx('levelClear'); }
 function playGameOver() { playSfx('gameOver'); }
 function playCollectible() { playSfx('collectible', 0.6); }
-function playFreezeCountdown() { activeFreezeCountdownSource = playSfx('freezeCountdown'); }
-function stopFreezeCountdown() { if (activeFreezeCountdownSource) { try { activeFreezeCountdownSource.stop(); } catch(e) {} activeFreezeCountdownSource = null; } }
+function playFreezeCountdown() { activeFreezeSound = playSfx('freezeCountdown'); }
+function stopFreezeCountdown() { if (activeFreezeSound) { activeFreezeSound.pause(); activeFreezeSound.currentTime = 0; activeFreezeSound = null; } }
 function playSplash() { playSfx('splash'); }
 function playCannonFire() { playSfx('cannonFire'); }
 function playExplosion() { playSfx('cannonFire', 0.5); }
@@ -3160,6 +3143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('click', initAudio, { once: true });
 document.addEventListener('keydown', initAudio, { once: true });
 document.addEventListener('touchstart', initAudio, { once: true });
+document.addEventListener('touchend', initAudio, { once: true });
 
 </script>
 </body>
