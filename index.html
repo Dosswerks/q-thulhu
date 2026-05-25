@@ -1,0 +1,3118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Q*thulhu — A Dosswerks Arcade Game</title>
+<meta name="description" content="Hop across the impossible geometry of R'lyeh as Q*thulhu, a tiny Star-Spawn hatchling, while dodging Cthulhu's tentacles in this Q*bert-inspired arcade game.">
+<meta property="og:title" content="Q*thulhu — A Dosswerks Arcade Game">
+<meta property="og:description" content="A Q*bert-inspired Lovecraft arcade game. Hop across R'lyeh's impossible pyramid while Cthulhu hunts you.">
+<meta property="og:image" content="https://dosswerks.github.io/q-thulhu/assets/qthulhu-og.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dosswerks.github.io/q-thulhu/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Q*thulhu — A Dosswerks Arcade Game">
+<meta name="twitter:description" content="A Q*bert-inspired Lovecraft arcade game. Hop across R'lyeh's impossible pyramid while Cthulhu hunts you.">
+<meta name="twitter:image" content="https://dosswerks.github.io/q-thulhu/assets/qthulhu-og.png">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#0a0a1a;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;font-family:'Courier New',monospace}
+#game-container{display:flex;flex-direction:column;align-items:center;width:100%;max-width:480px;padding:4px}
+canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;border:2px solid #333}
+#credits{width:100%;text-align:center;color:#999;font-size:12px;padding:10px 8px 4px;line-height:1.4;font-family:Georgia,'Times New Roman',serif;letter-spacing:0.3px}
+#credits a{color:#c8a832;text-decoration:none}
+#credits a:hover{color:#fff;text-decoration:underline}
+.tip-jar-section{margin-top:4px;text-align:center}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <canvas id="game" width="480" height="640"></canvas>
+  <div id="credits">
+    Based on <a href="https://hplovecraft.com/writings/fiction/cc.aspx" target="_blank"><em>The Call of Cthulhu</em></a> by H.P. Lovecraft.<br>
+    A game by <a href="https://www.andrewdoss.com" target="_blank">Andrew Doss</a>. &copy; 2026 Andrew Doss. All Rights Reserved.<br>
+    <a href="story.html">Read the story of the game</a>
+  </div>
+  <div class="tip-jar-section">
+    <p style="font-size:13px;color:#888;line-height:1.3;margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;">Enjoying the game? Tips help keep the games coming!</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:20px;">
+      <form action="https://www.paypal.com/donate" method="post" target="_blank">
+        <input type="hidden" name="hosted_button_id" value="HDD77QKGC6XXN">
+        <button type="submit" style="padding:0;background:none;border:none;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;gap:4px;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="80" height="100" viewBox="0 0 80 100" fill="none">
+            <rect x="16" y="8" width="48" height="8" rx="2" fill="#aaa"/><rect x="34" y="2" width="12" height="8" rx="2" fill="#999"/><rect x="36" y="4" width="8" height="3" rx="1" fill="#777"/>
+            <path d="M18 16 L16 82 Q16 90 24 90 L56 90 Q64 90 64 82 L62 16 Z" fill="rgba(180,220,255,0.18)" stroke="rgba(200,230,255,0.5)" stroke-width="2"/>
+            <path d="M22 20 L21 75" stroke="rgba(255,255,255,0.15)" stroke-width="3" stroke-linecap="round"/>
+            <text x="40" y="38" text-anchor="middle" font-size="9" font-weight="bold" fill="rgba(255,255,255,0.7)" font-family="sans-serif" letter-spacing="1">TIP JAR</text>
+            <g transform="rotate(-12 40 55)"><rect x="26" y="48" width="30" height="16" rx="2" fill="#3a7d44"/><text x="41" y="60" text-anchor="middle" font-size="12" font-weight="bold" fill="#6ec77a" font-family="serif">$</text></g>
+            <g transform="rotate(8 40 60)"><rect x="24" y="54" width="30" height="16" rx="2" fill="#2e6b38"/><text x="39" y="66" text-anchor="middle" font-size="12" font-weight="bold" fill="#5cb868" font-family="serif">$</text></g>
+            <g transform="rotate(-5 40 65)"><rect x="28" y="62" width="30" height="16" rx="2" fill="#357a3f"/><text x="43" y="74" text-anchor="middle" font-size="12" font-weight="bold" fill="#7dd48a" font-family="serif">$</text></g>
+            <ellipse cx="30" cy="78" rx="6" ry="3" fill="#d4a017" stroke="#b8860b" stroke-width="1"/><ellipse cx="42" cy="80" rx="5" ry="2.5" fill="#daa520" stroke="#b8860b" stroke-width="1"/><ellipse cx="52" cy="77" rx="5" ry="3" fill="#c9960c" stroke="#a07608" stroke-width="1"/>
+          </svg>
+        </button>
+      </form>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;top:-4px;">
+        <div id="qr-code" style="background:#fff;padding:4px;border-radius:4px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Q*THULHU — A Dosswerks Arcade Game
+// Lovecraft Arcade Vol. 5
+// ============================================================
+
+// ------------------------------------------------------------
+// SECTION 1: CONSTANTS & CONFIGURATION
+// ------------------------------------------------------------
+
+const CANVAS_W = 480;
+const CANVAS_H = 640;
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// Pyramid geometry
+const PYRAMID_ROWS = 7;
+const CUBE_W = 48;
+const CUBE_H = 36;
+const CUBE_TOP_H = 12;
+const PYRAMID_TOP_X = CANVAS_W / 2;
+const PYRAMID_TOP_Y = 180;
+
+// Game states
+const STATE = {
+  ATTRACT: 'ATTRACT',
+  LEVEL_INTRO: 'LEVEL_INTRO',
+  PLAYING: 'PLAYING',
+  LEVEL_CLEAR: 'LEVEL_CLEAR',
+  FALLING: 'FALLING',
+  RIDING_NIGHTGAUNT: 'RIDING_NIGHTGAUNT',
+  DYING: 'DYING',
+  GAME_OVER: 'GAME_OVER'
+};
+
+// Attract mode phases
+const ATTRACT_PHASE = {
+  TITLE: 0,
+  CHARACTERS: 1
+};
+const ATTRACT_PHASE_DURATION = 360; // ~6 seconds per phase
+
+// Directions (diagonal like Q*bert)
+const DIR = {
+  UP_LEFT: { dr: -1, dc: -1 },
+  UP_RIGHT: { dr: -1, dc: 0 },
+  DOWN_LEFT: { dr: 1, dc: 0 },
+  DOWN_RIGHT: { dr: 1, dc: 1 }
+};
+
+// Timing
+const HOP_DURATION = 18; // frames for a hop (slowed down)
+const ENEMY_HOP_DURATION = 14; // frames for enemy hops
+const TENTACLE_WARN_FRAMES = 120; // ~2 seconds warning before eruption
+const TENTACLE_ERUPT_FRAMES = 180; // ~3 seconds eruption
+const TENTACLE_RETRACT_FRAMES = 30; // tentacle sinks back down
+const LEVEL_CLEAR_FRAMES = 90;
+const DEATH_FRAMES = 60;
+const FALL_DURATION = 28; // frames for falling off the board (shorter fall)
+
+// Colors
+const COLOR = {
+  CUBE_NEUTRAL: '#192014',
+  CUBE_NEUTRAL_TOP: '#545f32',
+  CUBE_NEUTRAL_LEFT: '#333b21',
+  CUBE_NEUTRAL_RIGHT: '#192014',
+  CUBE_CONVERTED: '#4a1a6a',
+  CUBE_CONVERTED_TOP: '#6a2a8a',
+  CUBE_CONVERTED_LEFT: '#3a0a5a',
+  CUBE_CONVERTED_RIGHT: '#2a004a',
+  CUBE_HAZARD: '#1a5a2a',
+  CUBE_HAZARD_TOP: '#2a7a3a',
+  BG_DARK: '#0a0a1a',
+  OCEAN: '#0a1a2a',
+  TENTACLE_WARN: '#2a6a2a',
+  TENTACLE: '#1a7a3a',
+  PLAYER: '#4a8a2a',
+  PLAYER_EYE: '#eeff44',
+  TEXT_TITLE: '#6aee3a',
+  TEXT_SUB: '#888',
+  TEXT_SCORE: '#fff',
+  TEXT_HIGHLIGHT: '#ff0'
+};
+
+// Scoring
+const SCORE = {
+  CUBE_CONVERT: 25,
+  LEVEL_CLEAR: 1000,
+  ENEMY_DODGE: 50,
+  TENTACLE_DODGE: 100,
+  ELDER_SIGN: 500
+};
+
+// Ocean background images (preloaded)
+const oceanFrameA = new Image();
+oceanFrameA.src = 'assets/ocean-frame-a.png';
+const oceanFrameB = new Image();
+oceanFrameB.src = 'assets/ocean-frame-b.png';
+
+// Cthulhu head image (preloaded)
+const cthulhuHeadImg = new Image();
+cthulhuHeadImg.src = 'assets/cthulhu-head.png';
+
+// Ship image (preloaded)
+const shipImg = new Image();
+shipImg.src = 'assets/ship.png';
+
+// Tentacle image (preloaded)
+const tentacleImg = new Image();
+tentacleImg.src = 'assets/tentacle.png';
+
+// Title logo image (preloaded)
+const titleLogoImg = new Image();
+titleLogoImg.src = 'assets/title-logo.png';
+
+// Title block image (preloaded)
+const titleBlockImg = new Image();
+titleBlockImg.src = 'assets/title-block.png';
+
+// Night Gaunt carrying Q*thulhu image (for attract mode)
+const nightGauntCarryImg = new Image();
+nightGauntCarryImg.src = 'assets/night-gaunt-carry.png';
+
+// Elder Sign image (preloaded)
+const elderSignImg = new Image();
+elderSignImg.src = 'assets/elder-sign.png';
+
+// Explosion image (preloaded — procedural fallback if not available)
+const explosionImg = new Image();
+explosionImg.src = 'assets/explosion.png';
+
+// Character sprites (front and rear, for directional facing)
+const SPRITES = {
+  qthulhu: { front: new Image(), rear: new Image(), w: 36, h: 32.5 },
+  deepone: { front: new Image(), rear: new Image(), w: 24, h: 21.5 },
+  migo: { front: new Image(), rear: new Image(), w: 29, h: 23.5 },
+  starspawn: { front: new Image(), rear: new Image(), w: 30, h: 22 },
+  shoggoth: { front: new Image(), rear: new Image(), w: 36, h: 21.75 },
+  nightgaunt: { front: new Image(), rear: new Image(), w: 42, h: 25 },
+  cultist: { front: new Image(), rear: new Image(), w: 21, h: 29 }
+};
+SPRITES.qthulhu.front.src = 'assets/qthulhu-front.png';
+SPRITES.qthulhu.rear.src = 'assets/qthulhu-rear.png';
+SPRITES.deepone.front.src = 'assets/deep-one-front.png';
+SPRITES.deepone.rear.src = 'assets/deep-one-rear.png';
+SPRITES.migo.front.src = 'assets/mi-go-front.png';
+SPRITES.migo.rear.src = 'assets/mi-go-rear.png';
+SPRITES.starspawn.front.src = 'assets/star-spawn-front.png';
+SPRITES.starspawn.rear.src = 'assets/star-spawn-rear.png';
+SPRITES.shoggoth.front.src = 'assets/shoggoth-front.png';
+SPRITES.shoggoth.rear.src = 'assets/shoggoth-rear.png';
+SPRITES.nightgaunt.front.src = 'assets/night-gaunt-front.png';
+SPRITES.nightgaunt.rear.src = 'assets/night-gaunt-rear.png';
+SPRITES.cultist.front.src = 'assets/cultist-front.png';
+SPRITES.cultist.rear.src = 'assets/cultist-rear.png';
+
+// ------------------------------------------------------------
+// SECTION 2: NAMCO 8x8 PIXEL FONT
+// ------------------------------------------------------------
+
+const FONT = {
+  '0':[0x3C,0x66,0x6E,0x76,0x66,0x66,0x3C,0x00],'1':[0x18,0x38,0x18,0x18,0x18,0x18,0x7E,0x00],
+  '2':[0x3C,0x66,0x06,0x1C,0x30,0x66,0x7E,0x00],'3':[0x3C,0x66,0x06,0x1C,0x06,0x66,0x3C,0x00],
+  '4':[0x0E,0x1E,0x36,0x66,0x7F,0x06,0x06,0x00],'5':[0x7E,0x60,0x7C,0x06,0x06,0x66,0x3C,0x00],
+  '6':[0x1C,0x30,0x60,0x7C,0x66,0x66,0x3C,0x00],'7':[0x7E,0x66,0x06,0x0C,0x18,0x18,0x18,0x00],
+  '8':[0x3C,0x66,0x66,0x3C,0x66,0x66,0x3C,0x00],'9':[0x3C,0x66,0x66,0x3E,0x06,0x0C,0x38,0x00],
+  'A':[0x18,0x3C,0x66,0x66,0x7E,0x66,0x66,0x00],'B':[0x7C,0x66,0x66,0x7C,0x66,0x66,0x7C,0x00],
+  'C':[0x3C,0x66,0x60,0x60,0x60,0x66,0x3C,0x00],'D':[0x78,0x6C,0x66,0x66,0x66,0x6C,0x78,0x00],
+  'E':[0x7E,0x60,0x60,0x7C,0x60,0x60,0x7E,0x00],'F':[0x7E,0x60,0x60,0x7C,0x60,0x60,0x60,0x00],
+  'G':[0x3C,0x66,0x60,0x6E,0x66,0x66,0x3E,0x00],'H':[0x66,0x66,0x66,0x7E,0x66,0x66,0x66,0x00],
+  'I':[0x3C,0x18,0x18,0x18,0x18,0x18,0x3C,0x00],'J':[0x06,0x06,0x06,0x06,0x06,0x66,0x3C,0x00],
+  'K':[0x66,0x6C,0x78,0x70,0x78,0x6C,0x66,0x00],'L':[0x60,0x60,0x60,0x60,0x60,0x60,0x7E,0x00],
+  'M':[0x63,0x77,0x7F,0x6B,0x63,0x63,0x63,0x00],'N':[0x66,0x76,0x7E,0x7E,0x6E,0x66,0x66,0x00],
+  'O':[0x3C,0x66,0x66,0x66,0x66,0x66,0x3C,0x00],'P':[0x7C,0x66,0x66,0x7C,0x60,0x60,0x60,0x00],
+  'Q':[0x3C,0x66,0x66,0x66,0x6A,0x6C,0x36,0x00],'R':[0x7C,0x66,0x66,0x7C,0x6C,0x66,0x66,0x00],
+  'S':[0x3C,0x66,0x60,0x3C,0x06,0x66,0x3C,0x00],'T':[0x7E,0x18,0x18,0x18,0x18,0x18,0x18,0x00],
+  'U':[0x66,0x66,0x66,0x66,0x66,0x66,0x3C,0x00],'V':[0x66,0x66,0x66,0x66,0x66,0x3C,0x18,0x00],
+  'W':[0x63,0x63,0x63,0x6B,0x7F,0x77,0x63,0x00],'X':[0x66,0x66,0x3C,0x18,0x3C,0x66,0x66,0x00],
+  'Y':[0x66,0x66,0x66,0x3C,0x18,0x18,0x18,0x00],'Z':[0x7E,0x06,0x0C,0x18,0x30,0x60,0x7E,0x00],
+  ' ':[0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00],':':[0x00,0x18,0x18,0x00,0x18,0x18,0x00,0x00],
+  '.':[0x00,0x00,0x00,0x00,0x00,0x18,0x18,0x00],'-':[0x00,0x00,0x00,0x3C,0x00,0x00,0x00,0x00],
+  '!':[0x18,0x18,0x18,0x18,0x18,0x00,0x18,0x00],'?':[0x3C,0x66,0x06,0x0C,0x18,0x00,0x18,0x00],
+  '/':[0x02,0x06,0x0C,0x18,0x30,0x60,0x40,0x00],'*':[0x00,0x66,0x3C,0xFF,0x3C,0x66,0x00,0x00],
+  ',':[0x00,0x00,0x00,0x00,0x00,0x18,0x18,0x30],'#':[0x24,0x24,0x7E,0x24,0x7E,0x24,0x24,0x00],
+  '\'':[0x18,0x18,0x18,0x00,0x00,0x00,0x00,0x00]
+};
+
+function drawNamcoChar(ch, x, y, color, scale) {
+  const glyph = FONT[ch];
+  if (!glyph) return;
+  ctx.fillStyle = color;
+  for (let row = 0; row < 8; row++) {
+    const bits = glyph[row];
+    for (let col = 0; col < 8; col++) {
+      if (bits & (1 << (7 - col))) {
+        ctx.fillRect(x + col * scale, y + row * scale, scale, scale);
+      }
+    }
+  }
+}
+
+function drawNamco(text, x, y, color, scale) {
+  scale = scale || 1;
+  color = color || '#fff';
+  const str = String(text).toUpperCase();
+  for (let i = 0; i < str.length; i++) {
+    drawNamcoChar(str[i], x + i * 8 * scale, y, color, scale);
+  }
+}
+
+function drawNamcoCenter(text, y, color, scale) {
+  scale = scale || 1;
+  const str = String(text).toUpperCase();
+  const w = str.length * 8 * scale;
+  drawNamco(str, Math.round((CANVAS_W - w) / 2), y, color, scale);
+}
+
+// ------------------------------------------------------------
+// SECTION 3: UTILITY FUNCTIONS
+// ------------------------------------------------------------
+
+function clamp(v, min, max) { return v < min ? min : v > max ? max : v; }
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function randFloat(min, max) { return Math.random() * (max - min) + min; }
+
+// Add points and check for extra life (every 10,000 points)
+function addScore(points) {
+  game.score += points;
+  if (game.score >= game.nextExtraLife) {
+    game.lives++;
+    game.nextExtraLife += 10000;
+    playExtraLife();
+  }
+}
+
+// Get pixel position of a cube's top-center given row, col
+function cubePos(row, col) {
+  const x = PYRAMID_TOP_X + (col - row / 2) * CUBE_W;
+  const y = PYRAMID_TOP_Y + row * (CUBE_H - CUBE_TOP_H / 2 + 4);
+  return { x, y };
+}
+
+// Check if row,col is a valid cube position
+function isValidCube(row, col) {
+  return row >= 0 && row < PYRAMID_ROWS && col >= 0 && col <= row;
+}
+
+// Draw a shadow ellipse at a cube position (for jumping characters)
+function drawShadow(row, col, size) {
+  if (!isValidCube(row, col)) return;
+  const pos = cubePos(row, col);
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(pos.x, pos.y + 2, size, size * 0.4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+// Draw a sliding shadow that interpolates between two cube positions
+function drawSlidingShadow(fromRow, fromCol, toRow, toCol, progress, size) {
+  const fromValid = isValidCube(fromRow, fromCol);
+  const toValid = isValidCube(toRow, toCol);
+  if (!fromValid && !toValid) return;
+
+  let sx, sy;
+  if (fromValid && toValid) {
+    const fromPos = cubePos(fromRow, fromCol);
+    const toPos = cubePos(toRow, toCol);
+    sx = fromPos.x + (toPos.x - fromPos.x) * progress;
+    sy = (fromPos.y + 2) + ((toPos.y + 2) - (fromPos.y + 2)) * progress;
+  } else if (toValid) {
+    const toPos = cubePos(toRow, toCol);
+    sx = toPos.x;
+    sy = toPos.y + 2;
+  } else {
+    const fromPos = cubePos(fromRow, fromCol);
+    sx = fromPos.x;
+    sy = fromPos.y + 2;
+  }
+
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(sx, sy, size, size * 0.4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+// ------------------------------------------------------------
+// SECTION 4: GAME STATE
+// ------------------------------------------------------------
+
+let game = {
+  state: STATE.ATTRACT,
+  frameCount: 0,
+  score: 0,
+  highScore: 0,
+  lives: 3,
+  nextExtraLife: 10000,
+  level: 1,
+  round: 1,
+
+  // Board: 2D array [row][col], each cell = { converted: bool, hazard: bool, warnTimer: 0 }
+  board: [],
+
+  // Player
+  player: {
+    row: 0, col: 0,
+    hopTimer: 0,
+    hopDir: null,
+    fromRow: 0, fromCol: 0,
+    lastSafeRow: 0, lastSafeCol: 0, // last cube player successfully landed on
+    facing: 'front', // 'front' or 'rear'
+    flipX: false, // true when moving left
+    alive: true,
+    invincible: 0,
+    falling: false,
+    fallTimer: 0,
+    fallDir: null,
+    fallStartX: 0,
+    fallStartY: 0,
+    // Night Gaunt ride
+    riding: false,
+    rideTimer: 0,
+    rideStartX: 0,
+    rideStartY: 0,
+    rideNightGaunt: null
+  },
+
+  // Tentacle system
+  tentacles: [],
+  tentacleTimer: 0,
+  tentacleInterval: 120,
+
+  // Enemies
+  enemies: [],
+  enemySpawnTimer: 0,
+
+  // Night Gaunts (escape discs)
+  nightGaunts: [],
+
+  // Elder Signs (power-ups)
+  elderSigns: [],
+
+  // Particles
+  particles: [],
+
+  // Timers
+  levelClearTimer: 0,
+  deathTimer: 0,
+  attractTimer: 0,
+  attractPhase: 0,
+  levelIntroTimer: 0,
+  frozenTimer: 0, // when > 0, enemies are frozen and destroyable
+
+  // Departing Night Gaunt (flies away after dropping player)
+  departingNightGaunt: null,
+
+  // Elder Sign spawned this level
+  elderSignSpawned: false,
+
+  // 2-stage cube requirement
+  twoStage: false,
+
+  // Ship (The Alert — appears from level 1, fires from level 3)
+  ship: {
+    active: false,
+    visible: false,
+    x: -50,
+    y: 555,
+    dir: 1,
+    speed: 0.6,
+    fireTimer: 0,
+    fireInterval: 180,
+    bullets: [],
+    explosions: [],
+    // Pass system: ship enters, crosses, exits, then waits before next pass
+    passTimer: 0,
+    passCooldown: 300, // frames between passes
+    passing: false
+  }
+};
+
+// ------------------------------------------------------------
+// SECTION 5: BOARD INITIALIZATION
+// ------------------------------------------------------------
+
+function initBoard() {
+  game.board = [];
+  // 2-stage cubes start at level 5
+  game.twoStage = game.level >= 5;
+  for (let r = 0; r < PYRAMID_ROWS; r++) {
+    game.board[r] = [];
+    for (let c = 0; c <= r; c++) {
+      game.board[r][c] = { converted: false, intermediate: false, hazard: false, warnTimer: 0, eruptTimer: 0, retractTimer: 0, frozenTentacle: false };
+    }
+  }
+}
+
+function resetLevel() {
+  initBoard();
+  game.player.row = 0;
+  game.player.col = 0;
+  game.player.lastSafeRow = 0;
+  game.player.lastSafeCol = 0;
+  game.player.hopTimer = 0;
+  game.player.hopDir = null;
+  game.player.alive = true;
+  game.player.invincible = 60;
+  game.player.falling = false;
+  game.player.fallTimer = 0;
+  game.player.riding = false;
+  game.player.rideTimer = 0;
+  game.player.rideNightGaunt = null;
+  game.tentacles = [];
+  game.tentacleTimer = -180; // grace period: ~3 seconds before first tentacle
+  game.tentacleInterval = Math.max(90, 150 - game.level * 10);
+  game.enemies = [];
+  game.enemySpawnTimer = 300; // ~5 seconds before first enemy appears
+  game.nightGaunts = [];
+  game.elderSigns = [];
+  game.particles = [];
+  game.levelClearTimer = 0;
+  game.deathTimer = 0;
+  game.frozenTimer = 0;
+  stopShipEngine();
+  // Ship appears from level 1 onward (always active)
+  game.ship.active = true;
+  game.ship.visible = false;
+  game.ship.passing = false;
+  game.ship.passTimer = 600; // first pass after ~10 seconds
+  game.ship.passCooldown = Math.max(180, 420 - game.level * 30); // more frequent at higher levels
+  game.ship.x = -50;
+  game.ship.dir = 1;
+  game.ship.speed = 0.5 + game.level * 0.08;
+  game.ship.fireTimer = 60;
+  game.ship.fireInterval = Math.max(60, 180 - game.level * 15);
+  game.ship.bullets = [];
+  game.ship.explosions = [];
+  spawnNightGaunts();
+}
+
+function startGame() {
+  game.score = 0;
+  game.lives = 3;
+  game.nextExtraLife = 10000;
+  game.level = 1;
+  game.round = 1;
+  game.elderSignSpawned = false;
+  resetLevel();
+  game.state = STATE.LEVEL_INTRO;
+  game.levelIntroTimer = 120; // ~2 seconds
+  // Restart background music from the beginning
+  if (audioReady) {
+    bgMusic.currentTime = 0;
+    bgMusic.play().catch(() => {});
+  }
+}
+
+function spawnNightGaunts() {
+  // Night Gaunts hover next to specific edge cubes.
+  // Left side: adjacent to col 0 cubes (jump UP_LEFT to reach)
+  // Right side: adjacent to col=row cubes (jump UP_RIGHT to reach)
+  // They dock at a specific row for a while, then move to another.
+  game.nightGaunts = [
+    { side: 'left', dockedRow: 3, targetRow: 3, hoverTimer: 240, traveling: false, travelProgress: 0, bobTimer: 0 },
+    { side: 'right', dockedRow: 5, targetRow: 5, hoverTimer: 240, traveling: false, travelProgress: 0, bobTimer: 0 }
+  ];
+}
+
+// ------------------------------------------------------------
+// SECTION 6: INPUT SYSTEM
+// ------------------------------------------------------------
+
+const keys = {};
+let inputQueue = [];
+let touchStartX = 0, touchStartY = 0;
+
+document.addEventListener('keydown', (e) => {
+  keys[e.key] = true;
+  if (game.state === STATE.ATTRACT || game.state === STATE.GAME_OVER) {
+    startGame();
+    return;
+  }
+  // Queue directional input
+  if (game.state === STATE.PLAYING && game.player.hopTimer === 0) {
+    if (e.key === 'ArrowUp' || e.key === 'w') inputQueue.push('UP_RIGHT');
+    else if (e.key === 'ArrowRight' || e.key === 'd') inputQueue.push('DOWN_RIGHT');
+    else if (e.key === 'ArrowLeft' || e.key === 'a') inputQueue.push('UP_LEFT');
+    else if (e.key === 'ArrowDown' || e.key === 's') inputQueue.push('DOWN_LEFT');
+  }
+});
+
+document.addEventListener('keyup', (e) => { keys[e.key] = false; });
+
+// Touch/swipe controls
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (game.state === STATE.ATTRACT || game.state === STATE.GAME_OVER) {
+    startGame();
+    return;
+  }
+  const t = e.touches[0];
+  touchStartX = t.clientX;
+  touchStartY = t.clientY;
+});
+
+canvas.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  if (e.changedTouches.length === 0) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStartX;
+  const dy = t.clientY - touchStartY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < 20) return; // too short, ignore
+
+  // Map swipe to Q*bert diagonal directions
+  // Up-left, Up-right, Down-left, Down-right
+  if (dy < 0 && dx < 0) inputQueue.push('UP_LEFT');
+  else if (dy < 0 && dx >= 0) inputQueue.push('UP_RIGHT');
+  else if (dy >= 0 && dx < 0) inputQueue.push('DOWN_LEFT');
+  else inputQueue.push('DOWN_RIGHT');
+});
+
+canvas.addEventListener('click', () => {
+  if (game.state === STATE.ATTRACT || game.state === STATE.GAME_OVER) {
+    startGame();
+  }
+});
+
+// ------------------------------------------------------------
+// SECTION 7: PLAYER MOVEMENT
+// ------------------------------------------------------------
+
+function processPlayerInput() {
+  if (game.player.hopTimer > 0 || !game.player.alive) return;
+  if (inputQueue.length === 0) return;
+
+  const dir = inputQueue.shift();
+  const d = DIR[dir];
+  const newRow = game.player.row + d.dr;
+  const newCol = game.player.col + d.dc;
+
+  // Check if jumping onto a Night Gaunt
+  if (!isValidCube(newRow, newCol)) {
+    // Check Night Gaunt escape
+    const ng = checkNightGauntJump(game.player.row, game.player.col, dir);
+    if (ng) {
+      // Start riding the Night Gaunt — player visibly travels to the top
+      const fromPos = cubePos(game.player.row, game.player.col);
+      game.player.rideStartX = fromPos.x;
+      game.player.rideStartY = fromPos.y - 16;
+      game.player.riding = true;
+      game.player.facing = 'rear';
+      game.player.flipX = false;
+      game.player.rideTimer = 130; // ~2.2 seconds to travel to top (slower, more dramatic)
+      game.player.rideNightGaunt = ng;
+      game.state = STATE.RIDING_NIGHTGAUNT;
+      playNightGauntGrab();
+      // Remove this Night Gaunt (it carries player away)
+      const idx = game.nightGaunts.indexOf(ng);
+      if (idx >= 0) game.nightGaunts.splice(idx, 1);
+      return;
+    }
+    // Fell off the pyramid — start falling animation
+    const fromPos = cubePos(game.player.row, game.player.col);
+    game.player.fallStartX = fromPos.x;
+    game.player.fallStartY = fromPos.y - 16;
+    game.player.fallDir = dir;
+    game.player.falling = true;
+    game.player.fallTimer = FALL_DURATION;
+    game.state = STATE.FALLING;
+    return;
+  }
+
+  game.player.fromRow = game.player.row;
+  game.player.fromCol = game.player.col;
+  game.player.row = newRow;
+  game.player.col = newCol;
+  game.player.hopTimer = HOP_DURATION;
+  game.player.hopDir = dir;
+  // Set facing based on direction
+  game.player.facing = (dir === 'DOWN_LEFT' || dir === 'DOWN_RIGHT') ? 'front' : 'rear';
+  game.player.flipX = (dir === 'UP_LEFT' || dir === 'DOWN_LEFT');
+}
+
+function checkNightGauntJump(row, col, dir) {
+  for (const ng of game.nightGaunts) {
+    if (ng.traveling) continue; // can't catch a moving Night Gaunt
+
+    // Left Night Gaunt: player jumps off the left edge (col 0, direction UP_LEFT)
+    // Night Gaunt must be docked at this row
+    if (ng.side === 'left' && dir === 'UP_LEFT' && col === 0 && ng.dockedRow === row) {
+      return ng;
+    }
+
+    // Right Night Gaunt: player jumps off the right edge (col === row, direction UP_RIGHT)
+    // Night Gaunt must be docked at this row
+    if (ng.side === 'right' && dir === 'UP_RIGHT' && col === row && ng.dockedRow === row) {
+      return ng;
+    }
+  }
+  return null;
+}
+
+function playerLand() {
+  const { row, col } = game.player;
+  if (!isValidCube(row, col)) return;
+
+  playHop(); // landing sound
+
+  const cell = game.board[row][col];
+
+  // Track last safe position for respawn
+  game.player.lastSafeRow = row;
+  game.player.lastSafeCol = col;
+
+  // Check hazard (tentacles don't hurt during Elder Sign freeze)
+  if (cell.eruptTimer > 0 && game.player.invincible <= 0 && game.frozenTimer <= 0) {
+    playerDeath();
+    return;
+  }
+
+  // Check if player lands on a frozen enemy — destroy it
+  if (game.frozenTimer > 0) {
+    for (let i = game.enemies.length - 1; i >= 0; i--) {
+      const e = game.enemies[i];
+      if (!e.fallingOff && !e.dropping && e.hopTimer === 0 && e.row === row && e.col === col) {
+        addScore(200);
+        addParticle(row, col, 'death');
+        playEnemyDestroy();
+        game.enemies.splice(i, 1);
+      }
+    }
+    // Destroy frozen tentacles
+    const cell2 = game.board[row][col];
+    if (cell2.frozenTentacle && cell2.eruptTimer > 0) {
+      cell2.eruptTimer = 0;
+      cell2.retractTimer = 0;
+      cell2.frozenTentacle = false;
+      addScore(150);
+      addParticle(row, col, 'eldersign');
+      playEnemyDestroy();
+    }
+  }
+
+  // Convert cube (2-stage on level 5+)
+  if (!cell.converted) {
+    if (game.twoStage && !cell.intermediate) {
+      // First hop: neutral → intermediate
+      cell.intermediate = true;
+      addScore(SCORE.CUBE_CONVERT);
+      addParticle(row, col, 'convert');
+      playConvert();
+    } else {
+      // Second hop (or single-stage): → converted
+      cell.converted = true;
+      cell.intermediate = false;
+      addScore(SCORE.CUBE_CONVERT);
+      addParticle(row, col, 'convert');
+      playConvert();
+    }
+  }
+
+  // Check level clear
+  if (checkLevelClear()) {
+    game.state = STATE.LEVEL_CLEAR;
+    game.levelClearTimer = LEVEL_CLEAR_FRAMES;
+    addScore(SCORE.LEVEL_CLEAR);
+    playLevelClear();
+  }
+}
+
+function checkLevelClear() {
+  for (let r = 0; r < PYRAMID_ROWS; r++) {
+    for (let c = 0; c <= r; c++) {
+      if (!game.board[r][c].converted) return false;
+    }
+  }
+  return true;
+}
+
+function playerDeath() {
+  // Falling off the board always kills (bypasses invincibility)
+  // For other deaths, invincibility protects
+  if (game.player.invincible > 0 && game.state !== STATE.FALLING) return;
+  game.player.alive = false;
+  game.player.falling = false;
+  game.player.invincible = 0;
+  game.lives--;
+  game.state = STATE.DYING;
+  game.deathTimer = DEATH_FRAMES;
+  playDeath();
+  if (isValidCube(game.player.row, game.player.col)) {
+    addParticle(game.player.row, game.player.col, 'death');
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 8: TENTACLE SYSTEM
+// ------------------------------------------------------------
+
+function updateTentacles() {
+  game.tentacleTimer++;
+
+  // Spawn new tentacle eruption
+  if (game.tentacleTimer >= game.tentacleInterval) {
+    game.tentacleTimer = 0;
+    spawnTentacleEruption();
+  }
+
+  // Update existing tentacle states on cubes
+  for (let r = 0; r < PYRAMID_ROWS; r++) {
+    for (let c = 0; c <= r; c++) {
+      const cell = game.board[r][c];
+      if (cell.warnTimer > 0) {
+        cell.warnTimer--;
+        if (cell.warnTimer === 0) {
+          cell.eruptTimer = TENTACLE_ERUPT_FRAMES;
+        }
+      }
+      if (cell.eruptTimer > 0) {
+        cell.eruptTimer--;
+        // Check if player is on this cube (tentacles harmless during freeze)
+        if (game.player.row === r && game.player.col === c &&
+            game.player.hopTimer === 0 && game.player.invincible <= 0 && game.frozenTimer <= 0) {
+          playerDeath();
+        }
+        // When eruption ends, start retraction
+        if (cell.eruptTimer === 0) {
+          cell.retractTimer = TENTACLE_RETRACT_FRAMES;
+        }
+      }
+      if (cell.retractTimer > 0) {
+        cell.retractTimer--;
+      }
+    }
+  }
+}
+
+function spawnTentacleEruption() {
+  // Semi-predictive: target near player with some randomness
+  let targetRow, targetCol;
+
+  if (Math.random() < 0.6) {
+    // Aim near player
+    targetRow = game.player.row + randInt(-1, 1);
+    targetCol = game.player.col + randInt(-1, 1);
+  } else {
+    // Cut off escape route — aim ahead of player's last direction
+    targetRow = game.player.row + randInt(0, 2);
+    targetCol = game.player.col + randInt(-1, 1);
+  }
+
+  targetRow = clamp(targetRow, 0, PYRAMID_ROWS - 1);
+  targetCol = clamp(targetCol, 0, targetRow);
+
+  // Don't erupt on player's current position (feels unfair)
+  if (targetRow === game.player.row && targetCol === game.player.col) {
+    targetCol = Math.min(targetCol + 1, targetRow);
+    if (targetCol === game.player.col) targetRow = Math.min(targetRow + 1, PYRAMID_ROWS - 1);
+  }
+
+  if (isValidCube(targetRow, targetCol)) {
+    const cell = game.board[targetRow][targetCol];
+    if (cell.warnTimer === 0 && cell.eruptTimer === 0) {
+      cell.warnTimer = TENTACLE_WARN_FRAMES;
+      playTentacleWarn();
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 9: ENEMY SYSTEM
+// ------------------------------------------------------------
+
+function updateEnemies() {
+  game.enemySpawnTimer--;
+  // Don't spawn enemies during Elder Sign freeze
+  if (game.enemySpawnTimer <= 0 && game.enemies.length < 3 + game.level && game.frozenTimer <= 0) {
+    spawnEnemy();
+    game.enemySpawnTimer = Math.max(150, 360 - game.level * 20); // more time between spawns
+  }
+
+  for (let i = game.enemies.length - 1; i >= 0; i--) {
+    const e = game.enemies[i];
+
+    // Handle flying away (Mi-Go only)
+    if (e.flyingAway) {
+      e.flyTimer--;
+      if (e.flyTimer <= 0) {
+        game.enemies.splice(i, 1);
+        continue;
+      }
+      continue;
+    }
+
+    // Handle drop-in animation
+    if (e.dropping) {
+      e.dropTimer--;
+      if (e.dropTimer <= 0) {
+        e.dropping = false;
+        playEnemySpawn(e.type);
+      }
+      continue; // don't move or collide while dropping in
+    }
+
+    // Handle falling off the pyramid
+    if (e.fallingOff) {
+      e.fallTimer--;
+      if (e.fallTimer <= 0) {
+        // Splash effect — happens about 2 cube heights below the pyramid bottom
+        const splashY = e.fallStartPos.y + (CUBE_H * 2);
+        addSplashParticle(e.fallStartPos.x + e.fallDirX * 30, splashY);
+        playSplash();
+        game.enemies.splice(i, 1);
+        continue;
+      }
+      continue; // don't move or collide while falling off
+    }
+
+    // Handle hop animation
+    if (e.hopTimer > 0) {
+      e.hopTimer--;
+      if (e.hopTimer === 0) {
+        // Landing — finalize position
+        e.row = e.targetRow;
+        e.col = e.targetCol;
+        playEnemyLand(e.type);
+        // Cultists revert converted cubes back to neutral
+        if (e.type === 'cultist' && isValidCube(e.row, e.col)) {
+          const cell = game.board[e.row][e.col];
+          if (cell.converted) {
+            cell.converted = false;
+            // In 2-stage mode, revert to intermediate
+            if (game.twoStage) {
+              cell.intermediate = true;
+            }
+          } else if (cell.intermediate) {
+            cell.intermediate = false;
+          }
+        }
+      }
+      continue; // don't start new move while hopping
+    }
+
+    e.moveTimer--;
+
+    if (e.moveTimer <= 0) {
+      // Move enemy
+      let newRow, newCol;
+      if (e.type === 'shoggoth') {
+        // Shoggoths move along cube sides — they travel vertically along the edge
+        // They treat the side faces as their floor, moving up/down the pyramid edge
+        if (e.side === 'left') {
+          // Move up or down along left edge (col stays 0, row changes)
+          const dr = Math.random() < 0.5 ? 1 : -1;
+          newRow = e.row + dr;
+          newCol = 0;
+        } else {
+          // Move up or down along right edge (col = row)
+          const dr = Math.random() < 0.5 ? 1 : -1;
+          newRow = e.row + dr;
+          newCol = newRow; // right edge: col always equals row
+        }
+        // Shoggoths can also cross to the other side at the bottom
+        if (!isValidCube(newRow, newCol) && e.row >= PYRAMID_ROWS - 2) {
+          e.side = e.side === 'left' ? 'right' : 'left';
+          newRow = e.row;
+          newCol = e.side === 'left' ? 0 : e.row;
+        }
+      } else if (e.type === 'deepone') {
+        // Predictable downward movement
+        const dirs = [DIR.DOWN_LEFT, DIR.DOWN_RIGHT];
+        const d = dirs[randInt(0, 1)];
+        newRow = e.row + d.dr;
+        newCol = e.col + d.dc;
+      } else if (e.type === 'cultist') {
+        // Cultists hop downward, reverting cubes — slightly random path
+        const dirs = [DIR.DOWN_LEFT, DIR.DOWN_RIGHT];
+        const d = dirs[randInt(0, 1)];
+        newRow = e.row + d.dr;
+        newCol = e.col + d.dc;
+      } else if (e.type === 'migo') {
+        // Mi-Go: random movement, but after several hops they fly away (no splash)
+        if (!e.hopCount) e.hopCount = 0;
+        e.hopCount++;
+        // After 4-8 hops, fly away
+        if (e.hopCount >= e.maxHops) {
+          e.flyingAway = true;
+          e.flyTimer = 60;
+          e.flyStartPos = cubePos(e.row, e.col);
+          e.flyDirX = (Math.random() < 0.5 ? -1 : 1) * randFloat(2, 4);
+          e.flyDirY = -randFloat(2, 3);
+          e.moveTimer = 999;
+          continue;
+        }
+        // Random lateral movement
+        const allDirs = Object.values(DIR);
+        const d = allDirs[randInt(0, 3)];
+        newRow = e.row + d.dr;
+        newCol = e.col + d.dc;
+      } else {
+        // Star Spawn — pursue player
+        const dr = game.player.row > e.row ? 1 : game.player.row < e.row ? -1 : 0;
+        const dc = game.player.col > e.col ? 1 : game.player.col < e.col ? -1 : 0;
+        newRow = e.row + dr;
+        newCol = e.col + dc;
+      }
+
+      if (isValidCube(newRow, newCol)) {
+        // Start hop animation
+        e.fromRow = e.row;
+        e.fromCol = e.col;
+        e.targetRow = newRow;
+        e.targetCol = newCol;
+        e.hopTimer = e.hopDuration;
+        e.moveTimer = e.speed;
+        // Set facing based on movement direction
+        e.facing = (newRow > e.row) ? 'front' : 'rear';
+        e.flipX = (newCol <= e.col && newRow !== e.row) || (newCol < e.col);
+      } else {
+        // Mi-Go fly away instead of falling off
+        if (e.type === 'migo') {
+          e.flyingAway = true;
+          e.flyTimer = 60;
+          e.flyStartPos = cubePos(e.row, e.col);
+          e.flyDirX = (Math.random() < 0.5 ? -1 : 1) * randFloat(2, 4);
+          e.flyDirY = -randFloat(2, 3);
+          e.moveTimer = 999;
+          continue;
+        }
+        // Enemy reached the edge — hop off the pyramid and splash
+        e.fallingOff = true;
+        e.fallTimer = 24; // shorter fall — only 2 cube heights
+        e.fallStartPos = cubePos(e.row, e.col);
+        // Determine fall direction based on attempted move
+        e.fallDirX = (newCol - e.row / 2) > (e.col - e.row / 2) ? 1 : -1;
+        e.fallDirY = 1; // always falls down
+        addScore(SCORE.ENEMY_DODGE);
+        continue;
+      }
+    }
+
+    // Check collision with player (only when not mid-hop, not frozen)
+    if (e.hopTimer === 0 && !e.frozen && e.row === game.player.row && e.col === game.player.col &&
+        game.player.hopTimer === 0 && game.player.invincible <= 0) {
+      // Cultists don't kill the player — player destroys them instead
+      if (e.type === 'cultist') {
+        addScore(100);
+        addParticle(e.row, e.col, 'death');
+        playEnemyDestroy();
+        game.enemies.splice(i, 1);
+      } else {
+        playerDeath();
+      }
+    }
+  }
+}
+
+function spawnEnemy() {
+  const types = ['deepone'];
+  if (game.level >= 2) types.push('migo');
+  if (game.level >= 2) types.push('cultist');
+  if (game.level >= 3) types.push('shoggoth');
+  if (game.level >= 4) types.push('starspawn');
+
+  const type = types[randInt(0, types.length - 1)];
+  const hopDur = ENEMY_HOP_DURATION; // frames for enemy hop animation
+
+  if (type === 'shoggoth') {
+    // Shoggoths start on a side of the pyramid and move laterally
+    // They hop on cube SIDES, not tops — start at a random row edge
+    const startRow = randInt(2, PYRAMID_ROWS - 2);
+    const side = Math.random() < 0.5 ? 'left' : 'right';
+    game.enemies.push({
+      type: 'shoggoth',
+      row: startRow,
+      col: side === 'left' ? 0 : startRow,
+      fromRow: startRow,
+      fromCol: side === 'left' ? 0 : startRow,
+      targetRow: startRow,
+      targetCol: side === 'left' ? 0 : startRow,
+      hopTimer: 0,
+      hopDuration: hopDur,
+      moveTimer: 35,
+      speed: 35,
+      dropping: true,
+      dropTimer: 30,
+      flyIn: false,
+      flyInFrom: null,
+      fallingOff: false,
+      fallTimer: 0,
+      fallStartPos: null,
+      fallDirX: 0,
+      fallDirY: 0,
+      frozen: false,
+      facing: 'front',
+      flipX: false,
+      side: side, // which side of cubes they hop on
+      onSide: true, // flag: this enemy hops on cube sides
+      flyingAway: false,
+      flyTimer: 0,
+      flyStartPos: null,
+      flyDirX: 0,
+      flyDirY: 0,
+      hopCount: 0,
+      maxHops: 999
+    });
+  } else {
+    // Mi-Go fly in from random off-screen directions
+    const flyIn = (type === 'migo');
+    const startRow = flyIn ? randInt(1, PYRAMID_ROWS - 2) : 0;
+    const startCol = flyIn ? randInt(0, startRow) : 0;
+    game.enemies.push({
+      type: type,
+      row: startRow,
+      col: startCol,
+      fromRow: startRow,
+      fromCol: startCol,
+      targetRow: startRow,
+      targetCol: startCol,
+      hopTimer: 0,
+      hopDuration: hopDur,
+      moveTimer: 30,
+      speed: type === 'starspawn' ? 25 : type === 'migo' ? 35 : type === 'cultist' ? 30 : 40,
+      dropping: true,
+      dropTimer: flyIn ? 45 : 30,
+      flyIn: flyIn,
+      flyInFrom: flyIn ? { x: randInt(0, 1) ? -60 : CANVAS_W + 60, y: randInt(50, 300) } : null,
+      fallingOff: false,
+      fallTimer: 0,
+      fallStartPos: null,
+      fallDirX: 0,
+      fallDirY: 0,
+      frozen: false,
+      facing: 'front',
+      flipX: false,
+      onSide: false,
+      flyingAway: false,
+      flyTimer: 0,
+      flyStartPos: null,
+      flyDirX: 0,
+      flyDirY: 0,
+      hopCount: 0,
+      maxHops: type === 'migo' ? randInt(4, 8) : 999
+    });
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 10: ELDER SIGN POWER-UPS
+// ------------------------------------------------------------
+
+function updateElderSigns() {
+  // Spawn elder sign: only one per level, only after enemies have appeared (several seconds in)
+  // Use enemySpawnTimer being low as a proxy for "enemies have had time to appear"
+  if (game.elderSigns.length === 0 && !game.elderSignSpawned &&
+      game.enemies.length > 0 && game.enemySpawnTimer < 200 && Math.random() < 0.003) {
+    game.elderSignSpawned = true;
+    game.elderSigns.push({
+      row: 0,
+      col: 0,
+      fromRow: 0,
+      fromCol: 0,
+      targetRow: 0,
+      targetCol: 0,
+      hopTimer: 0,
+      hopDuration: 18,
+      moveTimer: 40,
+      active: true
+    });
+  }
+
+  for (let i = game.elderSigns.length - 1; i >= 0; i--) {
+    const es = game.elderSigns[i];
+
+    // Handle hop animation
+    if (es.hopTimer > 0) {
+      es.hopTimer--;
+      if (es.hopTimer === 0) {
+        es.row = es.targetRow;
+        es.col = es.targetCol;
+      }
+    }
+
+    if (es.hopTimer === 0) {
+      es.moveTimer--;
+
+      if (es.moveTimer <= 0) {
+        // Bounce downward like Q*bert's green ball
+        const dirs = [DIR.DOWN_LEFT, DIR.DOWN_RIGHT];
+        const d = dirs[randInt(0, 1)];
+        const newRow = es.row + d.dr;
+        const newCol = es.col + d.dc;
+
+        if (isValidCube(newRow, newCol)) {
+          es.fromRow = es.row;
+          es.fromCol = es.col;
+          es.targetRow = newRow;
+          es.targetCol = newCol;
+          es.hopTimer = es.hopDuration;
+          es.moveTimer = 40;
+        } else {
+          // Fell off
+          game.elderSigns.splice(i, 1);
+          continue;
+        }
+      }
+    }
+
+    // Check player pickup — allow when either is mid-hop (crossing paths)
+    let esX, esY, pX, pY;
+    if (es.hopTimer > 0) {
+      const prog = 1 - (es.hopTimer / es.hopDuration);
+      const fp = cubePos(es.fromRow, es.fromCol);
+      const tp = cubePos(es.targetRow, es.targetCol);
+      esX = fp.x + (tp.x - fp.x) * prog;
+      esY = fp.y + (tp.y - fp.y) * prog;
+    } else {
+      const p = cubePos(es.row, es.col);
+      esX = p.x;
+      esY = p.y;
+    }
+    if (game.player.hopTimer > 0) {
+      const prog = 1 - (game.player.hopTimer / HOP_DURATION);
+      const fp = cubePos(game.player.fromRow, game.player.fromCol);
+      const tp = cubePos(game.player.row, game.player.col);
+      pX = fp.x + (tp.x - fp.x) * prog;
+      pY = fp.y + (tp.y - fp.y) * prog;
+    } else {
+      const p = cubePos(game.player.row, game.player.col);
+      pX = p.x;
+      pY = p.y;
+    }
+
+    if (Math.abs(esX - pX) < 20 && Math.abs(esY - pY) < 20) {
+      // Freeze all enemies AND tentacles — player can destroy them by jumping on them
+      game.frozenTimer = 180; // ~3 seconds
+      for (const e of game.enemies) {
+        e.frozen = true;
+        e.moveTimer = 999; // won't move while frozen
+        e.hopTimer = 0;
+      }
+      // Freeze tentacles: clear all warnings and eruptions
+      for (let r = 0; r < PYRAMID_ROWS; r++) {
+        for (let c = 0; c <= r; c++) {
+          const cell = game.board[r][c];
+          if (cell.eruptTimer > 0) {
+            cell.frozenTentacle = true; // mark as destroyable
+          }
+        }
+      }
+      addScore(SCORE.ELDER_SIGN);
+      addParticle(es.row, es.col, 'eldersign');
+      playCollectible();
+      game.elderSigns.splice(i, 1);
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 11: NIGHT GAUNT MOVEMENT
+// ------------------------------------------------------------
+
+function updateNightGaunts() {
+  for (const ng of game.nightGaunts) {
+    ng.bobTimer++;
+
+    if (ng.traveling) {
+      // Moving between row positions
+      ng.travelProgress += 0.015;
+      if (ng.travelProgress >= 1) {
+        ng.travelProgress = 0;
+        ng.dockedRow = ng.targetRow;
+        ng.traveling = false;
+        ng.hoverTimer = 240; // hover for ~4 seconds at this position
+      }
+    } else {
+      // Hovering at current row position
+      ng.hoverTimer--;
+      if (ng.hoverTimer <= 0) {
+        // Only move if the OTHER Night Gaunt is not currently traveling
+        const otherMoving = game.nightGaunts.some(other => other !== ng && other.traveling);
+        if (!otherMoving) {
+          // Pick a new row to travel to (rows 2 through PYRAMID_ROWS-1)
+          let newTarget;
+          do {
+            newTarget = randInt(2, PYRAMID_ROWS - 1);
+          } while (newTarget === ng.dockedRow);
+          ng.targetRow = newTarget;
+          ng.traveling = true;
+          ng.travelProgress = 0;
+        } else {
+          // Wait a bit longer for the other to finish
+          ng.hoverTimer = 30;
+        }
+      }
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 11B: SHIP SYSTEM (The Alert — sailors from the story)
+// ------------------------------------------------------------
+
+function updateShip() {
+  if (!game.ship.active) return;
+
+  if (!game.ship.passing) {
+    // Waiting between passes
+    game.ship.passTimer--;
+    if (game.ship.passTimer <= 0) {
+      // Start a new pass — enter from a random side
+      game.ship.passing = true;
+      game.ship.visible = true;
+      game.ship.dir = Math.random() < 0.5 ? 1 : -1;
+      game.ship.x = game.ship.dir === 1 ? -50 : CANVAS_W + 50;
+      startShipEngine();
+    }
+  } else {
+    // Ship is crossing the screen
+    game.ship.x += game.ship.speed * game.ship.dir;
+
+    // Check if ship has exited the other side
+    if ((game.ship.dir === 1 && game.ship.x > CANVAS_W + 50) ||
+        (game.ship.dir === -1 && game.ship.x < -50)) {
+      // Pass complete
+      game.ship.passing = false;
+      game.ship.visible = false;
+      game.ship.passTimer = game.ship.passCooldown + randInt(-60, 60); // some randomness
+      stopShipEngine();
+    }
+
+    // Fire at player (only level 3+)
+    if (game.level >= 3) {
+      game.ship.fireTimer--;
+      if (game.ship.fireTimer <= 0) {
+        game.ship.fireTimer = game.ship.fireInterval + randInt(-20, 20);
+        // Target a random cube on the pyramid
+        const targetRow = randInt(0, PYRAMID_ROWS - 1);
+        const targetCol = randInt(0, targetRow);
+        const targetPos = cubePos(targetRow, targetCol);
+        const dx = targetPos.x - game.ship.x;
+        const dy = targetPos.y - game.ship.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 0) {
+          const bulletSpeed = 2.5 + game.level * 0.2;
+          game.ship.bullets.push({
+            x: game.ship.x,
+            y: game.ship.y - 8,
+            vx: (dx / dist) * bulletSpeed,
+            vy: (dy / dist) * bulletSpeed,
+            life: 200,
+            targetRow: targetRow,
+            targetCol: targetCol
+          });
+          playCannonFire();
+        }
+      }
+    }
+  }
+
+  // Update bullets (always, even between passes)
+  for (let i = game.ship.bullets.length - 1; i >= 0; i--) {
+    const b = game.ship.bullets[i];
+    b.x += b.vx;
+    b.y += b.vy;
+    b.life--;
+
+    if (b.life <= 0 || b.y < 0 || b.x < 0 || b.x > CANVAS_W) {
+      game.ship.bullets.splice(i, 1);
+      continue;
+    }
+
+    // Check collision with player (in-flight)
+    if (game.player.hopTimer === 0 && game.player.alive && game.player.invincible <= 0) {
+      const playerPos = cubePos(game.player.row, game.player.col);
+      const px = playerPos.x;
+      const py = playerPos.y - 16;
+      if (Math.abs(b.x - px) < 14 && Math.abs(b.y - py) < 16) {
+        game.ship.bullets.splice(i, 1);
+        playerDeath();
+        continue;
+      }
+    }
+
+    // Check if bullet reached its target cube
+    if (b.targetRow !== undefined) {
+      const targetPos = cubePos(b.targetRow, b.targetCol);
+      if (Math.abs(b.x - targetPos.x) < 12 && Math.abs(b.y - targetPos.y) < 12) {
+        // Explosion on the cube
+        game.ship.explosions.push({
+          row: b.targetRow,
+          col: b.targetCol,
+          timer: 30,
+          maxTimer: 30
+        });
+        playExplosion();
+        // Check if player is on this cube
+        if (game.player.row === b.targetRow && game.player.col === b.targetCol &&
+            game.player.hopTimer === 0 && game.player.alive && game.player.invincible <= 0) {
+          playerDeath();
+        }
+        game.ship.bullets.splice(i, 1);
+        continue;
+      }
+    }
+  }
+
+  // Update explosions
+  for (let i = game.ship.explosions.length - 1; i >= 0; i--) {
+    game.ship.explosions[i].timer--;
+    if (game.ship.explosions[i].timer <= 0) {
+      game.ship.explosions.splice(i, 1);
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 12: PARTICLE SYSTEM
+// ------------------------------------------------------------
+
+function addParticle(row, col, type) {
+  const pos = cubePos(row, col);
+  for (let i = 0; i < 6; i++) {
+    game.particles.push({
+      x: pos.x + randFloat(-10, 10),
+      y: pos.y + randFloat(-10, 10),
+      vx: randFloat(-2, 2),
+      vy: randFloat(-3, -0.5),
+      life: randInt(15, 30),
+      maxLife: 30,
+      type: type,
+      color: type === 'convert' ? '#8a2ae8' :
+             type === 'death' ? '#ff3333' :
+             type === 'eldersign' ? '#aaff44' :
+             '#44ffaa'
+    });
+  }
+}
+
+function addSplashParticle(x, y) {
+  // Water splash particles — spray upward and outward
+  for (let i = 0; i < 10; i++) {
+    game.particles.push({
+      x: x + randFloat(-8, 8),
+      y: y,
+      vx: randFloat(-3, 3),
+      vy: randFloat(-4, -1),
+      life: randInt(12, 25),
+      maxLife: 25,
+      type: 'splash',
+      color: i < 5 ? '#4a8aaa' : '#7abace'
+    });
+  }
+}
+
+function updateParticles() {
+  for (let i = game.particles.length - 1; i >= 0; i--) {
+    const p = game.particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.1;
+    p.life--;
+    if (p.life <= 0) game.particles.splice(i, 1);
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 13: MAIN UPDATE
+// ------------------------------------------------------------
+
+function update() {
+  game.frameCount++;
+
+  if (game.state === STATE.ATTRACT) {
+    game.attractTimer++;
+    // Cycle through attract phases (title and characters)
+    // Title phase: 360 frames (~6 sec), Characters phase: dynamic (waits for fly-across to finish)
+    const charRevealEnd = 120 + 7 * 60 + 60; // all chars revealed + 1 sec pause
+    const flyDuration = 300; // frames for one pass across screen (slower)
+    const flyTotal = flyDuration * 2 + 60; // two passes + gap between
+    const charPhaseDuration = charRevealEnd + flyTotal;
+    const phaseDuration = game.attractPhase === ATTRACT_PHASE.TITLE ? 360 : charPhaseDuration;
+    if (game.attractTimer >= phaseDuration) {
+      game.attractTimer = 0;
+      game.attractPhase = (game.attractPhase + 1) % 2;
+    }
+    return;
+  }
+
+  if (game.state === STATE.LEVEL_INTRO) {
+    game.levelIntroTimer--;
+    if (game.levelIntroTimer <= 0) {
+      game.state = STATE.PLAYING;
+    }
+    return;
+  }
+
+  if (game.state === STATE.LEVEL_CLEAR) {
+    game.levelClearTimer--;
+    // Stop freeze countdown sound if still playing
+    if (game.frozenTimer > 0) {
+      game.frozenTimer = 0;
+      stopFreezeCountdown();
+      for (const e of game.enemies) {
+        e.frozen = false;
+        e.moveTimer = e.speed;
+      }
+    }
+    if (game.levelClearTimer <= 0) {
+      game.level++;
+      game.round++;
+      game.elderSignSpawned = false;
+      resetLevel();
+      game.state = STATE.LEVEL_INTRO;
+      game.levelIntroTimer = 120;
+    }
+    return;
+  }
+
+  if (game.state === STATE.FALLING) {
+    game.player.fallTimer--;
+    if (game.player.fallTimer <= 0) {
+      // Splash at Q's final rendered position — midpoint between pyramid bottom and ship smoke
+      const d = DIR[game.player.fallDir] || { dr: 1, dc: 0 };
+      const driftX = d.dc * 35 + (d.dc === 0 ? (d.dr > 0 ? -20 : 20) : 0);
+      const driftY = d.dr * 25;
+      const gravity = Math.pow(0.7 * 1.43, 2) * 100; // reduced gravity for earlier splash
+      const splashX = game.player.fallStartX + driftX;
+      const splashY = game.player.fallStartY + driftY + gravity;
+      addSplashParticle(splashX, splashY);
+      playSplash(); // splash sound, not death sound
+      game.player.falling = false;
+      // Kill player without playing death sound again
+      game.player.alive = false;
+      game.player.invincible = 0;
+      game.lives--;
+      game.state = STATE.DYING;
+      game.deathTimer = DEATH_FRAMES;
+      if (isValidCube(game.player.row, game.player.col)) {
+        addParticle(game.player.row, game.player.col, 'death');
+      }
+    }
+    return;
+  }
+
+  if (game.state === STATE.RIDING_NIGHTGAUNT) {
+    game.player.rideTimer--;
+    // Play rising sound at the start of the ride
+    if (game.player.rideTimer === 128) {
+      playNightGauntRise();
+    }
+    if (game.player.rideTimer <= 0) {
+      // Arrived at top — drop player onto cube (0,0)
+      game.player.riding = false;
+      game.player.row = 0;
+      game.player.col = 0;
+      game.player.hopTimer = 0;
+      game.player.invincible = 60;
+      game.state = STATE.PLAYING;
+      // The Night Gaunt flies away — add it as a departing entity
+      game.departingNightGaunt = {
+        x: cubePos(0, 0).x,
+        y: cubePos(0, 0).y - 40,
+        vx: (Math.random() < 0.5 ? -3 : 3),
+        vy: -2,
+        timer: 60
+      };
+      // Respawn a new Night Gaunt on that side after a delay
+      const riddenSide = game.player.rideNightGaunt ? game.player.rideNightGaunt.side : 'left';
+      game.player.rideNightGaunt = null;
+      setTimeout(() => {
+        if (game.state === STATE.PLAYING || game.state === STATE.RIDING_NIGHTGAUNT) {
+          game.nightGaunts.push({
+            side: riddenSide,
+            dockedRow: randInt(2, PYRAMID_ROWS - 1),
+            targetRow: randInt(2, PYRAMID_ROWS - 1),
+            hoverTimer: 240,
+            traveling: false,
+            travelProgress: 0,
+            bobTimer: 0
+          });
+        }
+      }, 3000);
+    }
+    return;
+  }
+
+  if (game.state === STATE.DYING) {
+    game.deathTimer--;
+    if (game.deathTimer <= 0) {
+      if (game.lives <= 0) {
+        game.state = STATE.GAME_OVER;
+        if (game.score > game.highScore) game.highScore = game.score;
+        stopShipEngine();
+        bgMusic.pause();
+        playGameOver();
+      } else {
+        game.player.alive = true;
+        game.player.row = game.player.lastSafeRow;
+        game.player.col = game.player.lastSafeCol;
+        game.player.hopTimer = 0;
+        game.player.invincible = 90;
+        game.state = STATE.PLAYING;
+        // Clear all enemies and restart spawning pattern
+        game.enemies = [];
+        game.enemySpawnTimer = 300; // ~5 seconds before enemies reappear
+        // Clear any hazards on spawn cube so player doesn't immediately die
+        const spawnCell = game.board[game.player.lastSafeRow][game.player.lastSafeCol];
+        spawnCell.warnTimer = 0;
+        spawnCell.eruptTimer = 0;
+        spawnCell.retractTimer = 0;
+      }
+    }
+    updateParticles();
+    return;
+  }
+
+  if (game.state !== STATE.PLAYING) return;
+
+  // Player hop animation
+  if (game.player.hopTimer > 0) {
+    game.player.hopTimer--;
+    if (game.player.hopTimer === 0) {
+      playerLand();
+      inputQueue = []; // clear stale inputs
+    }
+  }
+
+  // Process input
+  processPlayerInput();
+
+  // Invincibility countdown
+  if (game.player.invincible > 0) game.player.invincible--;
+
+  // Update systems
+  updateTentacles();
+  updateEnemies();
+  updateElderSigns();
+  updateNightGaunts();
+  updateShip();
+  updateParticles();
+
+  // Frozen timer countdown
+  if (game.frozenTimer > 0) {
+    game.frozenTimer--;
+    // Play countdown warning when freeze is about to expire
+    if (game.frozenTimer === 60) playFreezeCountdown();
+    if (game.frozenTimer <= 0) {
+      // Unfreeze all enemies
+      for (const e of game.enemies) {
+        e.frozen = false;
+        e.moveTimer = e.speed;
+      }
+      // Clear frozen tentacle flags
+      for (let r = 0; r < PYRAMID_ROWS; r++) {
+        for (let c = 0; c <= r; c++) {
+          game.board[r][c].frozenTentacle = false;
+        }
+      }
+    }
+  }
+
+  // Update departing Night Gaunt
+  if (game.departingNightGaunt) {
+    const dng = game.departingNightGaunt;
+    dng.x += dng.vx;
+    dng.y += dng.vy;
+    dng.timer--;
+    if (dng.timer <= 0) game.departingNightGaunt = null;
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 14: RENDERING — BACKGROUND & BOARD
+// ------------------------------------------------------------
+
+function renderBackground() {
+  // Two-frame ocean background: frame A always at full opacity, frame B fades in/out on top
+  const cycleLength = 80; // frames per cycle (half as fast)
+  const phase = game.frameCount % cycleLength;
+  // Fade B in for first half, out for second half
+  const alphaB = phase < cycleLength / 2 ? phase / (cycleLength / 2) : 1 - (phase - cycleLength / 2) / (cycleLength / 2);
+
+  // Clear to dark base in case images haven't loaded yet
+  ctx.fillStyle = '#050d18';
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  if (oceanFrameA.complete && oceanFrameA.naturalWidth > 0) {
+    ctx.globalAlpha = 1;
+    ctx.drawImage(oceanFrameA, 0, 0, CANVAS_W, CANVAS_H);
+  }
+
+  if (oceanFrameB.complete && oceanFrameB.naturalWidth > 0) {
+    ctx.globalAlpha = alphaB;
+    ctx.drawImage(oceanFrameB, 0, 0, CANVAS_W, CANVAS_H);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+function renderCthulhuHead() {
+  // Cthulhu head image with pulsing eye glows and waterline froth
+  const cx = CANVAS_W / 2;
+  const cy = 60;
+  const t = game.frameCount * 0.02;
+  const imgW = 300;
+  const imgH = 180;
+  const imgTop = cy - imgH * 0.35;
+
+  // Draw the image with a soft fade at the bottom (only affects visible pixels)
+  if (cthulhuHeadImg.complete && cthulhuHeadImg.naturalWidth > 0) {
+    // Use a temporary canvas to apply fade only to the image's own pixels
+    if (!renderCthulhuHead._offscreen) {
+      renderCthulhuHead._offscreen = document.createElement('canvas');
+      renderCthulhuHead._offscreen.width = imgW;
+      renderCthulhuHead._offscreen.height = imgH;
+    }
+    const offCtx = renderCthulhuHead._offscreen.getContext('2d');
+    offCtx.clearRect(0, 0, imgW, imgH);
+    offCtx.globalAlpha = 1;
+    offCtx.globalCompositeOperation = 'source-over';
+    offCtx.drawImage(cthulhuHeadImg, 0, 0, imgW, imgH);
+    // Apply fade to bottom 30px using destination-out
+    offCtx.globalCompositeOperation = 'destination-out';
+    const fadeGrad = offCtx.createLinearGradient(0, imgH - 30, 0, imgH);
+    fadeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    fadeGrad.addColorStop(1, 'rgba(0,0,0,1)');
+    offCtx.fillStyle = fadeGrad;
+    offCtx.fillRect(0, imgH - 30, imgW, 30);
+    offCtx.globalCompositeOperation = 'source-over';
+
+    ctx.globalAlpha = 0.85;
+    ctx.drawImage(renderCthulhuHead._offscreen, cx - imgW / 2, imgTop, imgW, imgH);
+    ctx.globalAlpha = 1;
+  }
+
+  // Pulsing eye glows (positioned relative to head center)
+  const eyeGlow = 0.4 + Math.sin(t * 2.5) * 0.35;
+  const eyeRadius = 10 + Math.sin(t * 3) * 3;
+  ctx.globalAlpha = eyeGlow;
+
+  // Left eye glow
+  const leftEyeX = cx - 48;
+  const leftEyeY = cy + 68;
+  const leftGrad = ctx.createRadialGradient(leftEyeX, leftEyeY, 0, leftEyeX, leftEyeY, eyeRadius);
+  leftGrad.addColorStop(0, '#ff2200');
+  leftGrad.addColorStop(0.5, 'rgba(255, 34, 0, 0.5)');
+  leftGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = leftGrad;
+  ctx.beginPath();
+  ctx.arc(leftEyeX, leftEyeY, eyeRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Right eye glow
+  const rightEyeX = cx + 48;
+  const rightEyeY = cy + 68;
+  const rightGrad = ctx.createRadialGradient(rightEyeX, rightEyeY, 0, rightEyeX, rightEyeY, eyeRadius);
+  rightGrad.addColorStop(0, '#ff2200');
+  rightGrad.addColorStop(0.5, 'rgba(255, 34, 0, 0.5)');
+  rightGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = rightGrad;
+  ctx.beginPath();
+  ctx.arc(rightEyeX, rightEyeY, eyeRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.globalAlpha = 1;
+}
+
+// Dense, soft frothy splash effect (for Cthulhu head waterline)
+function renderDenseFrothLine(x1, x2, y, t) {
+  const width = x2 - x1;
+  const numBlobs = Math.floor(width / 10);
+
+  // Soft hazy foam blobs (larger, lower opacity, blurred look)
+  for (let i = 0; i < numBlobs; i++) {
+    const px = x1 + (i / numBlobs) * width;
+    const hash = Math.sin(px * 0.13 + t * 2.5 + i * 1.3) * 0.5 + 0.5;
+    const py = y + Math.sin(t * 3 + i * 0.7) * 2 + (hash - 0.5) * 3;
+    const size = 5 + hash * 6;
+    ctx.globalAlpha = 0.12 + hash * 0.1;
+    const grad = ctx.createRadialGradient(px, py, 0, px, py, size);
+    grad.addColorStop(0, 'rgba(220, 240, 250, 0.4)');
+    grad.addColorStop(1, 'rgba(200, 230, 245, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(px, py, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// Froth that traces the diagonal bottom edges of the pyramid's bottom row
+function renderPyramidFroth(t) {
+  const bottomRow = PYRAMID_ROWS - 1;
+
+  for (let c = 0; c <= bottomRow; c++) {
+    const pos = cubePos(bottomRow, c);
+    const hw = CUBE_W / 2;
+    const hh = CUBE_H / 2;
+    const th = CUBE_TOP_H;
+
+    // Bottom-left edge: from (x - hw, y + hh) to (x, y + hh + th)
+    const blStartX = pos.x - hw;
+    const blStartY = pos.y + hh;
+    const bottomX = pos.x;
+    const bottomY = pos.y + hh + th;
+    // Bottom-right edge: from (x, y + hh + th) to (x + hw, y + hh)
+    const brEndX = pos.x + hw;
+    const brEndY = pos.y + hh;
+
+    // Soft hazy foam along left diagonal edge
+    const segsPerEdge = 5;
+    for (let s = 0; s < segsPerEdge; s++) {
+      const frac = (s + 0.5) / segsPerEdge;
+      const fx = blStartX + (bottomX - blStartX) * frac;
+      const fy = blStartY + (bottomY - blStartY) * frac;
+      const hash = Math.sin(fx * 0.2 + t * 3 + s * 2.1 + c * 1.7) * 0.5 + 0.5;
+      const size = 5 + hash * 5;
+      ctx.globalAlpha = 0.1 + hash * 0.08;
+      const grad = ctx.createRadialGradient(fx, fy, 0, fx, fy, size);
+      grad.addColorStop(0, 'rgba(220, 240, 250, 0.35)');
+      grad.addColorStop(1, 'rgba(200, 230, 245, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(fx, fy + Math.sin(t * 2.5 + s) * 1.5, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Soft hazy foam along right diagonal edge
+    for (let s = 0; s < segsPerEdge; s++) {
+      const frac = (s + 0.5) / segsPerEdge;
+      const fx = bottomX + (brEndX - bottomX) * frac;
+      const fy = bottomY + (brEndY - bottomY) * frac;
+      const hash = Math.sin(fx * 0.2 + t * 3 + s * 1.9 + c * 2.3) * 0.5 + 0.5;
+      const size = 5 + hash * 5;
+      ctx.globalAlpha = 0.1 + hash * 0.08;
+      const grad = ctx.createRadialGradient(fx, fy, 0, fx, fy, size);
+      grad.addColorStop(0, 'rgba(220, 240, 250, 0.35)');
+      grad.addColorStop(1, 'rgba(200, 230, 245, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(fx, fy + Math.sin(t * 2.5 + s + 1) * 1.5, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// Froth trailing behind the ship (wake effect)
+function renderShipFroth(x, y, dir, t) {
+  // Bottom of ship froth — grouped toward the back half, tighter spacing
+  const shipHalfW = 72; // half the ship image width
+  const frothY = y + 30; // at the bottom edge of the ship image
+  const sternX = x - dir * shipHalfW; // stern position
+  for (let i = 0; i < 8; i++) {
+    // Cluster froth circles in the back half of the ship, closer together
+    const fx = sternX + dir * (i / 8) * shipHalfW * 0.9;
+    const fy = frothY + Math.sin(t * 3 + i * 0.8) * 1.5;
+    const hash = Math.sin(fx * 0.15 + t * 2.5 + i * 1.5) * 0.5 + 0.5;
+    const size = 6 + hash * 7;
+    ctx.globalAlpha = 0.4 + hash * 0.25;
+    const grad = ctx.createRadialGradient(fx, fy, 0, fx, fy, size);
+    grad.addColorStop(0, 'rgba(240, 250, 255, 0.7)');
+    grad.addColorStop(0.5, 'rgba(220, 240, 250, 0.4)');
+    grad.addColorStop(1, 'rgba(200, 230, 245, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(fx, fy, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Wake trail behind the ship (more visible dissipating foam)
+  const wakeStartX = sternX; // stern
+  for (let i = 0; i < 12; i++) {
+    const dist = (i + 1) * 10;
+    const wx = wakeStartX - dir * dist;
+    const wy = frothY + Math.sin(t * 2 + i * 0.6) * 2;
+    const fade = 1 - (i / 12);
+    const size = 6 + fade * 6;
+    ctx.globalAlpha = fade * 0.35;
+    const grad = ctx.createRadialGradient(wx, wy, 0, wx, wy, size);
+    grad.addColorStop(0, 'rgba(220, 240, 255, 0.6)');
+    grad.addColorStop(0.6, 'rgba(200, 230, 245, 0.3)');
+    grad.addColorStop(1, 'rgba(200, 230, 245, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(wx, wy, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// Smoke from the ship's smokestack, trailing behind and dissipating
+function renderShipSmoke(x, y, dir, t) {
+  // Smokestack position (slightly behind center, above the ship)
+  const stackX = x - dir * 10; // offset toward stern
+  const stackY = y; // at ship level (moved down 30px from previous)
+
+  // Smoke puffs trail behind the ship — more opaque and billowy
+  for (let i = 0; i < 14; i++) {
+    const age = i * 0.15; // simulated age
+    const drift = -dir * (i * 6 + Math.sin(t * 2 + i * 0.5) * 3); // drifts behind
+    const rise = -i * 3.5 - Math.sin(t + i * 0.3) * 2; // rises up
+    const sx = stackX + drift;
+    const sy = stackY + rise;
+    const fade = 1 - (i / 14);
+    const size = 4 + i * 2; // grows as it ages
+    ctx.globalAlpha = fade * 0.6;
+    ctx.fillStyle = `rgba(60, 60, 70, ${fade * 0.8})`;
+    ctx.beginPath();
+    ctx.arc(sx, sy, size, 0, Math.PI * 2);
+    ctx.fill();
+    // Add a lighter inner puff for smokiness
+    if (i < 8) {
+      ctx.globalAlpha = fade * 0.3;
+      ctx.fillStyle = `rgba(120, 120, 130, ${fade * 0.5})`;
+      ctx.beginPath();
+      ctx.arc(sx + Math.sin(t * 1.5 + i) * 2, sy - 1, size * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// Ambient water tentacles — large, slow-moving, flanking the pyramid
+function renderAmbientTentacles() {
+  const t = game.frameCount * 0.02; // faster base speed
+  // 2 on the left, 1 on the right — upper half, flanking the pyramid
+  const tentacles = [
+    { x: 45, y: 300, size: 1.3, speed: 1.4, phase: 0 },
+    { x: 90, y: 260, size: 1.0, speed: 1.2, phase: 2.1 },
+    { x: 430, y: 280, size: 1.15, speed: 1.3, phase: 4.2 }
+  ];
+
+  for (const at of tentacles) {
+    // More squirmy: multiple sine waves combined
+    const sway1 = Math.sin(t * at.speed + at.phase) * 10 * at.size;
+    const sway2 = Math.sin(t * at.speed * 1.7 + at.phase * 0.6) * 5 * at.size;
+    const sway = sway1 + sway2;
+    const height = 55 * at.size;
+    const baseW = 12 * at.size;
+
+    ctx.globalAlpha = 0.6;
+
+    if (tentacleImg.complete && tentacleImg.naturalWidth > 0) {
+      // Use tentacle image, sliced and swaying with squirmy motion
+      const segments = 8;
+      const segH = height / segments;
+      for (let s = 0; s < segments; s++) {
+        const frac = s / segments;
+        const segY = at.y - height + s * segH;
+        const waveFactor = Math.pow(1 - frac, 1.2);
+        // Multiple wave offsets for squirmy look
+        const waveOffset = Math.sin(t * at.speed * 2.5 + at.phase + s * 0.9) * sway * waveFactor * 0.4
+                         + Math.sin(t * at.speed * 3.8 + at.phase * 1.3 + s * 1.4) * 4 * waveFactor;
+        const w = (baseW * 0.4) + (baseW * 0.6) * frac;
+
+        const srcY = frac * tentacleImg.naturalHeight;
+        const srcH = (1 / segments) * tentacleImg.naturalHeight;
+
+        ctx.drawImage(
+          tentacleImg,
+          0, srcY, tentacleImg.naturalWidth, srcH,
+          at.x - w / 2 + waveOffset, segY, w, segH + 1
+        );
+      }
+    } else {
+      // Procedural fallback
+      ctx.strokeStyle = '#1a5a3a';
+      ctx.lineWidth = baseW * 0.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(at.x, at.y);
+      ctx.quadraticCurveTo(
+        at.x + sway,
+        at.y - height / 2,
+        at.x + sway * 0.5,
+        at.y - height
+      );
+      ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function renderCube(row, col) {
+  const cell = game.board[row][col];
+  const pos = cubePos(row, col);
+  const x = pos.x;
+  const y = pos.y;
+  const hw = CUBE_W / 2;
+  const hh = CUBE_H / 2;
+  const th = CUBE_TOP_H;
+
+  let topColor, leftColor, rightColor;
+
+  if (cell.eruptTimer > 0) {
+    topColor = COLOR.CUBE_HAZARD_TOP;
+    leftColor = COLOR.CUBE_HAZARD;
+    rightColor = '#0a4a1a';
+  } else if (cell.warnTimer > 0) {
+    // Pulsing warning
+    const pulse = Math.sin(game.frameCount * 0.3) * 0.3 + 0.7;
+    topColor = `rgba(42, 106, 42, ${pulse})`;
+    leftColor = COLOR.CUBE_NEUTRAL_LEFT;
+    rightColor = COLOR.CUBE_NEUTRAL_RIGHT;
+  } else if (cell.converted) {
+    topColor = COLOR.CUBE_CONVERTED_TOP;
+    leftColor = COLOR.CUBE_CONVERTED_LEFT;
+    rightColor = COLOR.CUBE_CONVERTED_RIGHT;
+  } else if (cell.intermediate) {
+    // Intermediate stage color (between neutral and converted)
+    topColor = '#4a3a6a';
+    leftColor = '#2a1a4a';
+    rightColor = '#1a0a3a';
+  } else {
+    topColor = COLOR.CUBE_NEUTRAL_TOP;
+    leftColor = COLOR.CUBE_NEUTRAL_LEFT;
+    rightColor = COLOR.CUBE_NEUTRAL_RIGHT;
+  }
+
+  // Top face (diamond)
+  ctx.fillStyle = topColor;
+  ctx.beginPath();
+  ctx.moveTo(x, y - th);
+  ctx.lineTo(x + hw, y);
+  ctx.lineTo(x, y + th);
+  ctx.lineTo(x - hw, y);
+  ctx.closePath();
+  ctx.fill();
+
+  // Left face
+  ctx.fillStyle = leftColor;
+  ctx.beginPath();
+  ctx.moveTo(x - hw, y);
+  ctx.lineTo(x, y + th);
+  ctx.lineTo(x, y + hh + th);
+  ctx.lineTo(x - hw, y + hh);
+  ctx.closePath();
+  ctx.fill();
+
+  // Right face
+  ctx.fillStyle = rightColor;
+  ctx.beginPath();
+  ctx.moveTo(x + hw, y);
+  ctx.lineTo(x, y + th);
+  ctx.lineTo(x, y + hh + th);
+  ctx.lineTo(x + hw, y + hh);
+  ctx.closePath();
+  ctx.fill();
+
+  // Cube edge highlights
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, y - th);
+  ctx.lineTo(x + hw, y);
+  ctx.lineTo(x, y + th);
+  ctx.lineTo(x - hw, y);
+  ctx.closePath();
+  ctx.stroke();
+}
+
+// ------------------------------------------------------------
+// SECTION 15: RENDERING — TENTACLE ERUPTIONS
+// ------------------------------------------------------------
+
+function renderTentacleEruption(row, col) {
+  const cell = game.board[row][col];
+  if (cell.eruptTimer <= 0 && cell.retractTimer <= 0) return;
+
+  const pos = cubePos(row, col);
+  const t = game.frameCount * 0.1;
+  let height;
+  let alpha;
+
+  if (cell.eruptTimer > 0) {
+    // Rising/fully erupted tentacle
+    const progress = 1 - (cell.eruptTimer / TENTACLE_ERUPT_FRAMES);
+    height = 30 + progress * 25;
+    alpha = 1.0;
+  } else {
+    // Retracting — sinking back into the cube
+    const retractProgress = 1 - (cell.retractTimer / TENTACLE_RETRACT_FRAMES);
+    height = 55 * (1 - retractProgress);
+    alpha = 1.0;
+  }
+
+  if (height <= 1) return;
+
+  ctx.globalAlpha = alpha;
+
+  // Dagon-style sliced tentacle animation using tentacle image
+  if (tentacleImg.complete && tentacleImg.naturalWidth > 0) {
+    const segments = 8;
+    const segH = height / segments;
+    const waveSpeed = 2.5;
+    const waveAmplitude = 6;
+    const baseW = 20;
+    const tipW = 8;
+
+    for (let s = 0; s < segments; s++) {
+      const frac = s / segments;
+      const segY = pos.y - height + s * segH;
+      const waveFactor = Math.pow(1 - frac, 1.5); // tip sways more
+      const waveOffset = Math.sin(t * waveSpeed + row * 1.3 + col * 0.7 + s * 0.8) * waveAmplitude * waveFactor;
+      const w = tipW + (baseW - tipW) * frac;
+
+      // Source: slice from the tentacle image
+      const srcY = (frac) * tentacleImg.naturalHeight;
+      const srcH = (1 / segments) * tentacleImg.naturalHeight;
+
+      ctx.drawImage(
+        tentacleImg,
+        0, srcY, tentacleImg.naturalWidth, srcH,
+        pos.x - w / 2 + waveOffset, segY, w, segH + 1
+      );
+    }
+  } else {
+    // Fallback: procedural tentacle if image not loaded
+    ctx.strokeStyle = COLOR.TENTACLE;
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    ctx.quadraticCurveTo(
+      pos.x + Math.sin(t) * 8,
+      pos.y - height / 2,
+      pos.x + Math.sin(t * 1.5) * 5,
+      pos.y - height
+    );
+    ctx.stroke();
+  }
+
+  // Slime drips
+  ctx.fillStyle = 'rgba(42, 170, 42, 0.5)';
+  for (let i = 0; i < 3; i++) {
+    const dx = Math.sin(t + i * 2) * 6;
+    const dy = -height * (0.3 + i * 0.2);
+    if (pos.y + dy < pos.y) {
+      ctx.beginPath();
+      ctx.arc(pos.x + dx, pos.y + dy, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ------------------------------------------------------------
+// SECTION 16: RENDERING — PLAYER (Q*THULHU)
+// ------------------------------------------------------------
+
+function renderPlayer() {
+  if (!game.player.alive && !game.player.falling && !game.player.riding) return;
+
+  // Blinking when invincible
+  if (game.player.invincible > 0 && game.frameCount % 6 < 3) return;
+
+  let pos;
+  if (game.player.falling) {
+    // Falling off the board animation — short hop then splash into water
+    const progress = 1 - (game.player.fallTimer / FALL_DURATION);
+    const d = DIR[game.player.fallDir] || { dr: 1, dc: 0 };
+    // Horizontal drift in the jump direction
+    const driftX = d.dc * 35 * progress + (d.dc === 0 ? (d.dr > 0 ? -20 : 20) : 0) * progress;
+    const driftY = d.dr * 25 * progress;
+    // Arc up then short plummet — reduced gravity for earlier splash
+    const hopUp = -25 * Math.sin(Math.min(progress * 2, 1) * Math.PI);
+    const gravity = progress > 0.3 ? Math.pow((progress - 0.3) * 1.43, 2) * 100 : 0;
+    pos = {
+      x: game.player.fallStartX + driftX,
+      y: game.player.fallStartY + driftY + hopUp + gravity
+    };
+    // Fade out near end
+    if (progress > 0.8) {
+      ctx.globalAlpha = 1 - (progress - 0.8) / 0.2;
+    }
+  } else if (game.player.riding) {
+    // Riding Night Gaunt — wide curved arc from start position up to top cube
+    const progress = 1 - (game.player.rideTimer / 130);
+    const topPos = cubePos(0, 0);
+    const targetX = topPos.x;
+    const targetY = topPos.y - 16;
+    // Wide outward curve then up to the top
+    const arcX = game.player.rideStartX + (targetX - game.player.rideStartX) * progress;
+    const sideDir = game.player.rideStartX < CANVAS_W / 2 ? -1 : 1; // curve away from center
+    const arcOffsetX = Math.sin(progress * Math.PI) * 90 * sideDir; // wider outward swing
+    const arcY = game.player.rideStartY + (targetY - game.player.rideStartY) * progress;
+    const arcOffsetY = Math.sin(progress * Math.PI) * -100; // higher arc
+    pos = {
+      x: arcX + arcOffsetX,
+      y: arcY + arcOffsetY
+    };
+  } else if (game.player.hopTimer > 0) {
+    // Interpolate between from and to positions
+    const progress = 1 - (game.player.hopTimer / HOP_DURATION);
+    const fromPos = cubePos(game.player.fromRow, game.player.fromCol);
+    const toPos = cubePos(game.player.row, game.player.col);
+    const hopHeight = Math.sin(progress * Math.PI) * 20;
+    pos = {
+      x: fromPos.x + (toPos.x - fromPos.x) * progress,
+      y: fromPos.y + (toPos.y - fromPos.y) * progress - hopHeight
+    };
+  } else {
+    pos = cubePos(game.player.row, game.player.col);
+  }
+
+  const x = pos.x;
+  const y = pos.y - 16; // sit on top of cube
+
+  // Shadow slides from source to destination when hopping
+  if (game.player.hopTimer > 0 && !game.player.falling && !game.player.riding) {
+    const progress = 1 - (game.player.hopTimer / HOP_DURATION);
+    drawSlidingShadow(game.player.fromRow, game.player.fromCol, game.player.row, game.player.col, progress, 10);
+  }
+
+  // Body — sprite-based rendering
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1.5, 1.5);
+  if (game.player.flipX) ctx.scale(-1, 1);
+
+  const playerSprite = game.player.facing === 'rear' ? SPRITES.qthulhu.rear : SPRITES.qthulhu.front;
+  const pw = SPRITES.qthulhu.w;
+  const ph = SPRITES.qthulhu.h;
+  if (playerSprite.complete && playerSprite.naturalWidth > 0) {
+    ctx.drawImage(playerSprite, -pw / 2, -ph / 2, pw, ph);
+  } else {
+    // Fallback procedural
+    ctx.fillStyle = COLOR.PLAYER;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 10, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = COLOR.PLAYER_EYE;
+    ctx.beginPath();
+    ctx.ellipse(-4, -3, 4, 5, 0, 0, Math.PI * 2);
+    ctx.ellipse(4, -3, 4, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+
+  // Draw Night Gaunt carrying the player during ride (rear sprites)
+  if (game.player.riding) {
+    const ngX = x;
+    const ngY = y - 30;
+
+    // Night Gaunt rear sprite above player
+    ctx.save();
+    ctx.translate(ngX, ngY);
+    ctx.scale(1.5, 1.5);
+    const ngRear = SPRITES.nightgaunt.rear;
+    if (ngRear.complete && ngRear.naturalWidth > 0) {
+      ctx.drawImage(ngRear, -SPRITES.nightgaunt.w / 2, -SPRITES.nightgaunt.h / 2, SPRITES.nightgaunt.w, SPRITES.nightgaunt.h);
+    }
+    ctx.restore();
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ------------------------------------------------------------
+// SECTION 17: RENDERING — ENEMIES
+// ------------------------------------------------------------
+
+function renderEnemy(e) {
+  let x, y;
+  const t = game.frameCount * 0.08;
+
+  if (e.flyingAway) {
+    // Mi-Go flying away animation
+    const progress = 1 - (e.flyTimer / 60);
+    const startPos = e.flyStartPos || cubePos(e.row, e.col);
+    x = startPos.x + e.flyDirX * progress * 80;
+    y = (startPos.y - 14) + e.flyDirY * progress * 80;
+    ctx.globalAlpha = Math.max(0, 1 - progress);
+  } else if (e.dropping) {
+    // Drop-in animation: enemy falls from above (or flies in for Mi-Go)
+    const pos = cubePos(e.row, e.col);
+    const dropProgress = 1 - (e.dropTimer / (e.flyIn ? 45 : 30));
+    if (e.flyIn && e.flyInFrom) {
+      // Mi-Go flies in from off-screen position
+      x = e.flyInFrom.x + (pos.x - e.flyInFrom.x) * dropProgress;
+      y = e.flyInFrom.y + ((pos.y - 14) - e.flyInFrom.y) * dropProgress;
+    } else {
+      x = pos.x;
+      const startY = -40;
+      const targetY = pos.y - 14;
+      y = startY + (targetY - startY) * dropProgress;
+      // Slight bounce at the end
+      if (dropProgress > 0.8) {
+        const bouncePhase = (dropProgress - 0.8) / 0.2;
+        y += Math.sin(bouncePhase * Math.PI) * -5;
+      }
+    }
+    ctx.globalAlpha = 0.5 + dropProgress * 0.5;
+  } else if (e.fallingOff) {
+    // Falling off the pyramid — hop arc then plummet into water (short fall)
+    const progress = 1 - (e.fallTimer / 24);
+    const startX = e.fallStartPos.x;
+    const startY = e.fallStartPos.y - 14;
+    // Arc up briefly then fall
+    const hopUp = -20 * Math.sin(Math.min(progress * 2, 1) * Math.PI);
+    const gravity = progress > 0.3 ? Math.pow((progress - 0.3) * 1.43, 2) * 120 : 0;
+    x = startX + e.fallDirX * 25 * progress;
+    y = startY + hopUp + gravity;
+    // Fade out as it falls
+    ctx.globalAlpha = Math.max(0, 1 - progress * 0.7);
+  } else if (e.hopTimer > 0) {
+    // Hop animation: interpolate between from and to positions with arc
+    const progress = 1 - (e.hopTimer / e.hopDuration);
+    const fromPos = cubePos(e.fromRow, e.fromCol);
+    const toPos = cubePos(e.targetRow, e.targetCol);
+    const hopHeight = Math.sin(progress * Math.PI) * 15;
+    x = fromPos.x + (toPos.x - fromPos.x) * progress;
+    y = (fromPos.y - 14) + ((toPos.y - 14) - (fromPos.y - 14)) * progress - hopHeight;
+    // Shadow slides from source to destination
+    drawSlidingShadow(e.fromRow, e.fromCol, e.targetRow, e.targetCol, progress, 8);
+  } else {
+    const pos = cubePos(e.row, e.col);
+    x = pos.x;
+    y = pos.y - 14;
+  }
+
+  // Shoggoths are offset to the side face of the cube and rotated
+  if (e.onSide && !e.dropping) {
+    const sideOffset = e.side === 'left' ? -(CUBE_W * 0.4) : (CUBE_W * 0.4);
+    x += sideOffset;
+    y += CUBE_H * 0.35; // lower, on the side face
+  }
+
+  // Scale enemies: Shoggoth 1.69x (25% smaller than 2.25), Mi-Go 1.125x (25% smaller), others 1.5x
+  const enemyScale = e.type === 'shoggoth' ? 1.69 : e.type === 'migo' ? 1.125 : 1.5;
+  ctx.save();
+  ctx.translate(x, y);
+  // Shoggoths rotate to match the side face perspective
+  if (e.onSide && !e.dropping) {
+    const rotAngle = e.side === 'left' ? -0.5 : 0.5; // tilt to match cube side
+    ctx.rotate(rotAngle);
+  }
+  ctx.scale(enemyScale, enemyScale);
+  if (e.flipX) ctx.scale(-1, 1);
+
+  // Get the appropriate sprite
+  const spriteKey = e.type === 'deepone' ? 'deepone' :
+                    e.type === 'migo' ? 'migo' :
+                    e.type === 'starspawn' ? 'starspawn' :
+                    e.type === 'cultist' ? 'cultist' :
+                    e.type === 'shoggoth' ? 'shoggoth' : 'deepone';
+  const spriteData = SPRITES[spriteKey];
+  const spriteImg = e.facing === 'rear' ? spriteData.rear : spriteData.front;
+  const sw = spriteData.w;
+  const sh = spriteData.h;
+
+  if (spriteImg.complete && spriteImg.naturalWidth > 0) {
+    ctx.drawImage(spriteImg, -sw / 2, -sh / 2, sw, sh);
+  } else {
+    // Fallback: simple colored ellipse
+    const colors = { deepone: '#2a8a6a', migo: '#6a3a8a', starspawn: '#3a6a2a', cultist: '#4a3a2a', shoggoth: '#5a2a7a' };
+    ctx.fillStyle = colors[e.type] || '#888';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, sw / 2, sh / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+
+  if (e.dropping || e.fallingOff || e.flyingAway) ctx.globalAlpha = 1;
+}
+
+// ------------------------------------------------------------
+// SECTION 18: RENDERING — NIGHT GAUNTS & ELDER SIGNS
+// ------------------------------------------------------------
+
+function renderNightGaunts() {
+  for (const ng of game.nightGaunts) {
+    let x, y;
+
+    // Calculate current visual row (interpolate during travel)
+    let visualRow = ng.dockedRow;
+    if (ng.traveling) {
+      visualRow = ng.dockedRow + (ng.targetRow - ng.dockedRow) * ng.travelProgress;
+    }
+
+    // Position at the "phantom cube" location — smoothly interpolated
+    // Left NG: adjacent to col 0 cubes; Right NG: adjacent to col=row cubes
+    // Interpolate pixel position between integer row positions for smooth sliding
+    const rowFloor = Math.floor(visualRow);
+    const rowCeil = Math.ceil(visualRow);
+    const rowFrac = visualRow - rowFloor;
+
+    let phantomPos;
+    if (ng.side === 'left') {
+      const posA = cubePos(Math.max(0, rowFloor - 1), -1);
+      const posB = cubePos(Math.max(0, rowCeil - 1), -1);
+      phantomPos = {
+        x: posA.x + (posB.x - posA.x) * rowFrac,
+        y: posA.y + (posB.y - posA.y) * rowFrac
+      };
+    } else {
+      const posA = cubePos(Math.max(0, rowFloor - 1), rowFloor);
+      const posB = cubePos(Math.max(0, rowCeil - 1), rowCeil);
+      phantomPos = {
+        x: posA.x + (posB.x - posA.x) * rowFrac,
+        y: posA.y + (posB.y - posA.y) * rowFrac
+      };
+    }
+    x = phantomPos.x;
+
+    // Gentle bob while hovering
+    const bob = Math.sin(ng.bobTimer * 0.05) * 4;
+    y = phantomPos.y + bob;
+
+    const t = game.frameCount * 0.06;
+    const r = Math.round(visualRow);
+
+    // When hovering (docked), show golden glow on the escape cube and pulse the NG
+    if (!ng.traveling) {
+      const edgeCubePos = cubePos(r, ng.side === 'left' ? 0 : r);
+
+      // Bright golden glow on the escape cube — more visible
+      const glowPulse = 0.5 + Math.sin(game.frameCount * 0.08) * 0.3;
+      ctx.globalAlpha = glowPulse;
+      const cubeGrad = ctx.createRadialGradient(edgeCubePos.x, edgeCubePos.y, 0, edgeCubePos.x, edgeCubePos.y, 22);
+      cubeGrad.addColorStop(0, 'rgba(255, 220, 80, 1.0)');
+      cubeGrad.addColorStop(0.3, 'rgba(255, 200, 50, 0.7)');
+      cubeGrad.addColorStop(0.6, 'rgba(255, 180, 30, 0.3)');
+      cubeGrad.addColorStop(1, 'rgba(255, 160, 0, 0)');
+      ctx.fillStyle = cubeGrad;
+      ctx.beginPath();
+      ctx.arc(edgeCubePos.x, edgeCubePos.y, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Synced golden glow on the Night Gaunt itself
+      const ngGrad = ctx.createRadialGradient(x, y, 0, x, y, 20);
+      ngGrad.addColorStop(0, 'rgba(255, 200, 50, 0.5)');
+      ngGrad.addColorStop(0.5, 'rgba(255, 180, 30, 0.2)');
+      ngGrad.addColorStop(1, 'rgba(255, 160, 0, 0)');
+      ctx.fillStyle = ngGrad;
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // Night Gaunt sprite
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(1.5, 1.5);
+    // Flip based on side
+    if (ng.side === 'left') ctx.scale(-1, 1);
+
+    const ngSprite = SPRITES.nightgaunt.front;
+    const ngW = SPRITES.nightgaunt.w;
+    const ngH = SPRITES.nightgaunt.h;
+    if (ngSprite.complete && ngSprite.naturalWidth > 0) {
+      ctx.drawImage(ngSprite, -ngW / 2, -ngH / 2, ngW, ngH);
+    } else {
+      // Fallback procedural
+      ctx.fillStyle = ng.traveling ? '#121220' : '#1a1a2a';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 8, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      const flapSpeed = ng.traveling ? t * 2 : t;
+      const wingSpan = 14 + Math.sin(flapSpeed) * 4;
+      ctx.fillStyle = '#2a2a4a';
+      ctx.beginPath();
+      ctx.ellipse(-wingSpan, -2, 10, 5, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(wingSpan, -2, 10, 5, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Render departing Night Gaunt (flying away after dropping player) — rear sprite
+  if (game.departingNightGaunt) {
+    const dng = game.departingNightGaunt;
+    ctx.save();
+    ctx.translate(dng.x, dng.y);
+    ctx.scale(1.5, 1.5);
+    if (dng.vx < 0) ctx.scale(-1, 1);
+    const ngRear = SPRITES.nightgaunt.rear;
+    if (ngRear.complete && ngRear.naturalWidth > 0) {
+      ctx.drawImage(ngRear, -SPRITES.nightgaunt.w / 2, -SPRITES.nightgaunt.h / 2, SPRITES.nightgaunt.w, SPRITES.nightgaunt.h);
+    } else {
+      ctx.fillStyle = '#1a1a2a';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 7, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+function renderElderSigns() {
+  for (const es of game.elderSigns) {
+    let x, y;
+
+    if (es.hopTimer > 0) {
+      // Hop animation: interpolate between from and to positions with arc
+      const progress = 1 - (es.hopTimer / es.hopDuration);
+      const fromPos = cubePos(es.fromRow, es.fromCol);
+      const toPos = cubePos(es.targetRow, es.targetCol);
+      const hopHeight = Math.sin(progress * Math.PI) * 18;
+      x = fromPos.x + (toPos.x - fromPos.x) * progress;
+      y = (fromPos.y - 12) + ((toPos.y - 12) - (fromPos.y - 12)) * progress - hopHeight;
+      // Shadow slides from source to destination
+      drawSlidingShadow(es.fromRow, es.fromCol, es.targetRow, es.targetCol, progress, 6);
+    } else {
+      const pos = cubePos(es.row, es.col);
+      x = pos.x;
+      y = pos.y - 12;
+    }
+
+    const t = game.frameCount * 0.05;
+    const glow = 0.6 + Math.sin(t * 3) * 0.3;
+    const rotation = t;
+
+    // Glowing aura
+    ctx.globalAlpha = glow * 0.4;
+    const auraGrad = ctx.createRadialGradient(x, y, 0, x, y, 18);
+    auraGrad.addColorStop(0, 'rgba(170, 255, 68, 0.6)');
+    auraGrad.addColorStop(1, 'rgba(170, 255, 68, 0)');
+    ctx.fillStyle = auraGrad;
+    ctx.beginPath();
+    ctx.arc(x, y, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Elder Sign image (81x79), rotated
+    ctx.globalAlpha = glow;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    if (elderSignImg.complete && elderSignImg.naturalWidth > 0) {
+      const imgW = 36;
+      const imgH = 29;
+      ctx.drawImage(elderSignImg, -imgW / 2, -imgH / 2, imgW, imgH);
+    } else {
+      // Fallback procedural star
+      ctx.strokeStyle = '#aaff44';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const angle = (i * 4 * Math.PI / 5) - Math.PI / 2;
+        const px = Math.cos(angle) * 8;
+        const py = Math.sin(angle) * 8;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 18B: RENDERING — SHIP
+// ------------------------------------------------------------
+
+function renderShip() {
+  if (!game.ship.active) return;
+
+  // Render bullets even if ship isn't visible (they persist after ship exits)
+  for (const b of game.ship.bullets) {
+    // Subtle orange glow behind the cannonball for visibility
+    ctx.globalAlpha = 0.4;
+    const glowGrad = ctx.createRadialGradient(b.x, b.y, 2, b.x, b.y, 12);
+    glowGrad.addColorStop(0, 'rgba(255, 160, 60, 0.6)');
+    glowGrad.addColorStop(0.5, 'rgba(255, 120, 30, 0.2)');
+    glowGrad.addColorStop(1, 'rgba(255, 80, 0, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    // Cannonball
+    ctx.fillStyle = '#222';
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+    ctx.fill();
+    // Light edge highlight
+    ctx.strokeStyle = 'rgba(200, 150, 80, 0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Render explosions on cubes
+  for (const exp of game.ship.explosions) {
+    const pos = cubePos(exp.row, exp.col);
+    const progress = 1 - (exp.timer / exp.maxTimer);
+    const alpha = progress < 0.5 ? 1 : 1 - (progress - 0.5) * 2;
+    const size = 16 + progress * 12;
+    ctx.globalAlpha = alpha;
+    if (explosionImg.complete && explosionImg.naturalWidth > 0) {
+      ctx.drawImage(explosionImg, pos.x - size, pos.y - size, size * 2, size * 2);
+    } else {
+      // Procedural explosion fallback
+      const grad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, size);
+      grad.addColorStop(0, 'rgba(255, 200, 50, 0.9)');
+      grad.addColorStop(0.4, 'rgba(255, 100, 20, 0.7)');
+      grad.addColorStop(0.7, 'rgba(200, 50, 0, 0.4)');
+      grad.addColorStop(1, 'rgba(100, 30, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  if (!game.ship.visible) return;
+
+  const x = game.ship.x;
+  const y = game.ship.y;
+  const t = game.frameCount * 0.03;
+  const dir = game.ship.dir; // 1 = right, -1 = left
+
+  // No rocking — ship moves steadily
+
+  ctx.save();
+  ctx.translate(x, y);
+  // Flip horizontally if traveling left
+  ctx.scale(dir, 1);
+
+  // Draw ship image (twice as long as procedural: ~144x60)
+  if (shipImg.complete && shipImg.naturalWidth > 0) {
+    const imgW = 144;
+    const imgH = 60;
+    ctx.drawImage(shipImg, -imgW / 2, -imgH / 2, imgW, imgH);
+  } else {
+    // Fallback: simple hull shape
+    ctx.fillStyle = '#3a2a1a';
+    ctx.beginPath();
+    ctx.moveTo(36, 0);
+    ctx.lineTo(24, -12);
+    ctx.lineTo(-24, -12);
+    ctx.lineTo(-36, 0);
+    ctx.lineTo(-18, 15);
+    ctx.lineTo(18, 15);
+    ctx.lineTo(30, 9);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.restore();
+
+  // Ship froth (bottom of ship + wake trail) — rendered in world space
+  renderShipFroth(x, y, dir, t);
+
+  // Smoke from smokestack (trails behind ship)
+  renderShipSmoke(x, y, dir, t);
+}
+
+// ------------------------------------------------------------
+// SECTION 19: RENDERING — PARTICLES & HUD
+// ------------------------------------------------------------
+
+function renderParticles() {
+  for (const p of game.particles) {
+    ctx.globalAlpha = p.life / p.maxLife;
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function renderHUD() {
+  // Score (larger)
+  drawNamco('SCORE: ' + game.score, 8, 8, COLOR.TEXT_SCORE, 2);
+
+  // High score (larger)
+  const hiText = 'HI: ' + game.highScore;
+  const hiWidth = hiText.length * 8 * 2;
+  drawNamco(hiText, CANVAS_W - hiWidth - 8, 8, '#aaa', 2);
+
+  // Lives — tiny Q*thulhu sprites
+  const lifeSprite = SPRITES.qthulhu.front;
+  for (let i = 0; i < game.lives; i++) {
+    const lx = 10 + i * 22;
+    const ly = CANVAS_H - 20;
+    if (lifeSprite.complete && lifeSprite.naturalWidth > 0) {
+      ctx.drawImage(lifeSprite, lx, ly - 10, 18, 16);
+    } else {
+      ctx.fillStyle = COLOR.PLAYER;
+      ctx.beginPath();
+      ctx.ellipse(lx + 6, ly, 5, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Target color indicator (lower right corner) — "CHANGE TO" label + arrow + cube
+  const indicatorX = CANVAS_W - 30;
+  const indicatorY = CANVAS_H - 34;
+  const indW = 20;
+  const indH = 15;
+  const indTH = 5;
+
+  // "CHANGE TO" text and three pulsing triangle arrows, aligned on same line, left of the block
+  drawNamco('CHANGE TO', CANVAS_W - 150, indicatorY + 5, '#888', 1);
+
+  // Three pulsing triangle arrows pointing right toward the cube
+  const arrowPulse = 0.5 + Math.sin(game.frameCount * 0.1) * 0.5;
+  const arrowBaseX = CANVAS_W - 72;
+  const arrowY = indicatorY + 9;
+  for (let a = 0; a < 3; a++) {
+    const ax = arrowBaseX + a * 7;
+    const alpha = arrowPulse * (0.4 + a * 0.25); // each arrow slightly brighter
+    ctx.globalAlpha = Math.min(1, alpha);
+    ctx.fillStyle = '#ccc';
+    ctx.beginPath();
+    ctx.moveTo(ax, arrowY - 4);
+    ctx.lineTo(ax + 5, arrowY);
+    ctx.lineTo(ax, arrowY + 4);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Draw a mini cube showing the target color (always the final converted purple)
+  ctx.fillStyle = COLOR.CUBE_CONVERTED_TOP;
+  ctx.beginPath();
+  ctx.moveTo(indicatorX, indicatorY - indTH);
+  ctx.lineTo(indicatorX + indW / 2, indicatorY);
+  ctx.lineTo(indicatorX, indicatorY + indTH);
+  ctx.lineTo(indicatorX - indW / 2, indicatorY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = COLOR.CUBE_CONVERTED_LEFT;
+  ctx.beginPath();
+  ctx.moveTo(indicatorX - indW / 2, indicatorY);
+  ctx.lineTo(indicatorX, indicatorY + indTH);
+  ctx.lineTo(indicatorX, indicatorY + indH + indTH);
+  ctx.lineTo(indicatorX - indW / 2, indicatorY + indH);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = COLOR.CUBE_CONVERTED_RIGHT;
+  ctx.beginPath();
+  ctx.moveTo(indicatorX + indW / 2, indicatorY);
+  ctx.lineTo(indicatorX, indicatorY + indTH);
+  ctx.lineTo(indicatorX, indicatorY + indH + indTH);
+  ctx.lineTo(indicatorX + indW / 2, indicatorY + indH);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// ------------------------------------------------------------
+// SECTION 20: RENDERING — ATTRACT MODE
+// ------------------------------------------------------------
+
+function renderAttractMode() {
+  renderBackground();
+
+  if (game.attractPhase === ATTRACT_PHASE.TITLE) {
+    renderAttractTitle();
+  } else {
+    renderAttractCharacters();
+  }
+
+  // Blink prompt (always visible)
+  if (Math.floor(game.frameCount / 30) % 2 === 0) {
+    drawNamcoCenter('CLICK OR PRESS ANY KEY', 580, '#fff', 2);
+    drawNamcoCenter('TO START', 600, '#fff', 2);
+  }
+}
+
+function renderAttractTitle() {
+  // Title logo (298x200, centered)
+  if (titleLogoImg.complete && titleLogoImg.naturalWidth > 0) {
+    const logoW = 298;
+    const logoH = 200;
+    ctx.drawImage(titleLogoImg, (CANVAS_W - logoW) / 2, 20, logoW, logoH);
+  }
+
+  drawNamcoCenter('LOVECRAFT ARCADE VOLUME 5', 230, '#aaa', 2);
+  drawNamcoCenter('ARROW KEYS TO HOP', 300, '#ccc', 2);
+  drawNamcoCenter('CONVERT ALL CUBES', 324, '#ccc', 2);
+  drawNamcoCenter('AVOID TENTACLES', 348, '#ccc', 2);
+  drawNamcoCenter('ESCAPE VIA NIGHT GAUNTS', 372, '#ccc', 2);
+
+  // Space for a block image (centered, below instructions)
+  // Block image dimensions: 96 x 72 pixels, centered at y=440
+  if (typeof titleBlockImg !== 'undefined' && titleBlockImg.complete && titleBlockImg.naturalWidth > 0) {
+    ctx.drawImage(titleBlockImg, (CANVAS_W - 96) / 2, 448, 96, 72);
+  }
+}
+
+function renderAttractCharacters() {
+  drawNamcoCenter('CAST OF CHARACTERS', 50, COLOR.TEXT_TITLE, 2);
+
+  const startY = 100;
+  const spacing = 55;
+  const indentStep = 20; // each character indented further right
+  const baseX = 80; // starting sprite X (moved 50px right)
+  const textOffsetX = 40; // text offset from sprite
+
+  // Hold on title for 2 seconds (120 frames) before revealing characters
+  const revealDelay = 120;
+  const revealFrame = 60; // one character per second
+  const elapsed = game.attractTimer - revealDelay;
+  const numRevealed = elapsed <= 0 ? 0 : Math.min(7, Math.floor(elapsed / revealFrame) + 1);
+
+  const characters = [
+    { name: 'Q*THULHU', sprite: SPRITES.qthulhu },
+    { name: 'DEEP ONE', sprite: SPRITES.deepone },
+    { name: 'MI-GO', sprite: SPRITES.migo },
+    { name: 'BABY SHOGGOTH', sprite: SPRITES.shoggoth },
+    { name: 'STAR SPAWN', sprite: SPRITES.starspawn },
+    { name: 'NIGHT GAUNT', sprite: SPRITES.nightgaunt },
+    { name: 'CULTIST', sprite: SPRITES.cultist }
+  ];
+
+  for (let i = 0; i < numRevealed; i++) {
+    const ch = characters[i];
+    const cy = startY + i * spacing;
+    const cx = baseX + i * indentStep;
+
+    // Draw sprite
+    if (ch.sprite.front.complete && ch.sprite.front.naturalWidth > 0) {
+      ctx.drawImage(ch.sprite.front, cx - ch.sprite.w / 2, cy - ch.sprite.h / 2, ch.sprite.w, ch.sprite.h);
+    }
+
+    // Draw name (white)
+    drawNamco(ch.name, cx + textOffsetX, cy - 8, '#fff', 2);
+  }
+
+  // Flying Night Gaunt carrying Q*thulhu — after all characters revealed
+  const charRevealEnd = revealDelay + 7 * revealFrame + 60; // all revealed + 1 sec pause
+  const flyStart = (game.attractTimer + (game.interpFactor || 0)) - charRevealEnd;
+  if (flyStart > 0 && nightGauntCarryImg.complete && nightGauntCarryImg.naturalWidth > 0) {
+    const flyDuration = 300; // frames per pass (slower)
+    const imgW = 96;
+    const imgH = 72;
+    const flyY = 510; // vertical center between characters and "click" text
+
+    let flyX, flyYOffset, flipX;
+    if (flyStart <= flyDuration) {
+      // First pass: left to right
+      const progress = flyStart / flyDuration;
+      flyX = -imgW + (CANVAS_W + imgW * 2) * progress;
+      flyYOffset = Math.sin(progress * Math.PI * 3) * 8; // gentle bobbing
+      flipX = false;
+    } else if (flyStart <= flyDuration + 60) {
+      // Gap between passes — off screen
+      flyX = -999;
+      flyYOffset = 0;
+      flipX = false;
+    } else {
+      // Second pass: right to left
+      const pass2Start = flyStart - flyDuration - 60;
+      const progress = pass2Start / flyDuration;
+      flyX = CANVAS_W + imgW - (CANVAS_W + imgW * 2) * progress;
+      flyYOffset = Math.sin(progress * Math.PI * 3) * 8;
+      flipX = true;
+    }
+
+    if (flyX > -imgW && flyX < CANVAS_W + imgW) {
+      ctx.save();
+      ctx.translate(flyX, flyY + flyYOffset);
+      if (flipX) ctx.scale(-1, 1);
+      ctx.drawImage(nightGauntCarryImg, -imgW / 2, -imgH / 2, imgW, imgH);
+      ctx.restore();
+    }
+  }
+}
+
+// (Demo phase removed)
+
+// ------------------------------------------------------------
+// SECTION 21: RENDERING — GAME OVER
+// ------------------------------------------------------------
+
+function renderGameOver() {
+  renderBackground();
+
+  drawNamcoCenter('GAME OVER', 200, '#ff3333', 4);
+  drawNamcoCenter('FINAL SCORE: ' + game.score, 280, '#fff', 2);
+  drawNamcoCenter('LEVEL: ' + game.level, 310, '#fff', 2);
+
+  if (game.score >= game.highScore && game.score > 0) {
+    drawNamcoCenter('NEW HIGH SCORE!', 350, COLOR.TEXT_HIGHLIGHT, 2);
+  }
+
+  if (Math.floor(game.frameCount / 30) % 2 === 0) {
+    drawNamcoCenter('CLICK OR PRESS ANY KEY', 440, '#ccc', 2);
+    drawNamcoCenter('TO PLAY AGAIN', 464, '#ccc', 2);
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 22: MAIN RENDER
+// ------------------------------------------------------------
+
+function render() {
+  if (game.state === STATE.ATTRACT) {
+    renderAttractMode();
+    return;
+  }
+
+  if (game.state === STATE.GAME_OVER) {
+    renderGameOver();
+    return;
+  }
+
+  if (game.state === STATE.LEVEL_INTRO) {
+    renderBackground();
+    drawNamcoCenter('LEVEL ' + game.level, CANVAS_H / 2 - 40, COLOR.TEXT_HIGHLIGHT, 4);
+    if (game.level >= 3) {
+      drawNamcoCenter('THE ALERT OPENS FIRE', CANVAS_H / 2 + 20, '#aa8833', 2);
+    } else if (game.level >= 2) {
+      drawNamcoCenter('MI-GO APPEAR', CANVAS_H / 2 + 20, '#6a3a8a', 2);
+    }
+    drawNamcoCenter('GET READY', CANVAS_H / 2 + 60, '#ccc', 2);
+    return;
+  }
+
+  // Playing / Level Clear / Dying / Falling states
+  renderBackground();
+  renderCthulhuHead();
+  renderAmbientTentacles();
+
+  // If player is falling AWAY from camera (up-left or up-right), render them behind the pyramid
+  const fallingBehind = game.player.falling &&
+    (game.player.fallDir === 'UP_LEFT' || game.player.fallDir === 'UP_RIGHT');
+  if (fallingBehind) {
+    renderPlayer();
+  }
+
+  // Render board
+  for (let r = 0; r < PYRAMID_ROWS; r++) {
+    for (let c = 0; c <= r; c++) {
+      renderCube(r, c);
+      renderTentacleEruption(r, c);
+    }
+  }
+
+  // Soft fade at the bottom edge of the pyramid blocks (removed)
+
+  // Render Night Gaunts
+  renderNightGaunts();
+
+  // Render Elder Signs
+  renderElderSigns();
+
+  // Render ship (in the water below pyramid)
+  renderShip();
+
+  // Render enemies
+  for (const e of game.enemies) {
+    renderEnemy(e);
+  }
+
+  // Render player in front of pyramid (normal play, or falling toward camera)
+  if (!fallingBehind) {
+    renderPlayer();
+  }
+
+  // Render particles
+  renderParticles();
+
+  // Render HUD
+  renderHUD();
+
+  // Level clear overlay
+  if (game.state === STATE.LEVEL_CLEAR) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+    drawNamcoCenter('LEVEL CLEAR!', CANVAS_H / 2 - 20, COLOR.TEXT_HIGHLIGHT, 3);
+    drawNamcoCenter('BONUS: ' + SCORE.LEVEL_CLEAR, CANVAS_H / 2 + 20, '#fff', 2);
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 23: AUDIO SYSTEM (MP3 Samples)
+// ------------------------------------------------------------
+
+let audioReady = false;
+
+// Sound effect pool — each key maps to a preloaded Audio element.
+// For sounds that may overlap, we clone on play.
+const SFX = {
+  hop:            new Audio('assets/sfx/q-land.mp3'),
+  convert:        new Audio('assets/sfx/cube-convert.mp3'),
+  tentacleWarn:   new Audio('assets/sfx/tentacle-warn.mp3'),
+  death:          new Audio('assets/sfx/player-death.mp3'),
+  levelClear:     new Audio('assets/sfx/level-clear.mp3'),
+  gameOver:       new Audio('assets/sfx/game-over.mp3'),
+  collectible:    new Audio('assets/sfx/collectible-grab.mp3'),
+  freezeCountdown:new Audio('assets/sfx/freeze-countdown.mp3'),
+  splash:         new Audio('assets/sfx/splash.mp3'),
+  cannonFire:     new Audio('assets/sfx/cannon-fire.mp3'),
+  nightGauntGrab: new Audio('assets/sfx/night-gaunt-grab.mp3'),
+  nightGauntRise: new Audio('assets/sfx/night-gaunt-rise.mp3'),
+  enemyDestroy:   new Audio('assets/sfx/enemy-destroy.mp3'),
+  extraLife:      new Audio('assets/sfx/extra-life.mp3'),
+  // Enemy spawn sounds
+  deeponeSpawn:   new Audio('assets/sfx/deep-one-spawn.mp3'),
+  migoSpawn:      new Audio('assets/sfx/mi-go-spawn.mp3'),
+  shoggothSpawn:  new Audio('assets/sfx/shoggoth-spawn.mp3'),
+  starspawnSpawn: new Audio('assets/sfx/star-spawn-spawn.mp3'),
+  cultistSpawn:   new Audio('assets/sfx/cultist-spawn.mp3'),
+  // Enemy land sounds
+  deeponeLand:    new Audio('assets/sfx/deep-one-land.mp3'),
+  migoLand:       new Audio('assets/sfx/mi-go-land.mp3'),
+  shoggothLand:   new Audio('assets/sfx/shoggoth-land.mp3'),
+  starspawnLand:  new Audio('assets/sfx/star-spawn-land.mp3'),
+  cultistLand:    new Audio('assets/sfx/cultist-land.mp3')
+};
+
+// Looping sounds (ship engine, background music)
+const shipEngineAudio = new Audio('assets/sfx/ship-engine.mp3');
+shipEngineAudio.loop = true;
+shipEngineAudio.volume = 0.12;
+
+const bgMusic = new Audio('assets/sfx/bg-music.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.7;
+
+// Preload all sounds
+Object.values(SFX).forEach(a => { a.preload = 'auto'; a.load(); });
+shipEngineAudio.preload = 'auto'; shipEngineAudio.load();
+bgMusic.preload = 'auto'; bgMusic.load();
+
+function initAudio() {
+  if (audioReady) return;
+  audioReady = true;
+  // Start background music on first interaction
+  bgMusic.play().catch(() => {});
+}
+
+// Play a one-shot sound effect (clones to allow overlapping playback)
+const SFX_VOLUME = 0.35; // master volume for all one-shot SFX
+let activeFreezeCountdown = null; // reference to stop on level clear
+function playSfx(key, volume) {
+  if (!audioReady) return;
+  const src = SFX[key];
+  if (!src) return;
+  const sound = src.cloneNode();
+  sound.volume = volume !== undefined ? volume : SFX_VOLUME;
+  sound.play().catch(() => {});
+  return sound;
+}
+
+function playHop() { playSfx('hop', 0.15); }
+function playConvert() { playSfx('convert'); }
+function playTentacleWarn() { playSfx('tentacleWarn'); }
+function playDeath() { playSfx('death', 0.2); }
+function playLevelClear() { playSfx('levelClear'); }
+function playGameOver() { playSfx('gameOver'); }
+function playCollectible() { playSfx('collectible', 0.6); }
+function playFreezeCountdown() { activeFreezeCountdown = playSfx('freezeCountdown'); }
+function stopFreezeCountdown() { if (activeFreezeCountdown) { activeFreezeCountdown.pause(); activeFreezeCountdown = null; } }
+function playSplash() { playSfx('splash'); }
+function playCannonFire() { playSfx('cannonFire'); }
+function playExplosion() { playSfx('cannonFire', 0.5); } // reuse cannon sound for explosion
+function playNightGauntGrab() { playSfx('nightGauntGrab'); }
+function playNightGauntRise() { playSfx('nightGauntRise'); }
+function playEnemyDestroy() { playSfx('enemyDestroy'); }
+function playExtraLife() { playSfx('extraLife', 0.5); }
+
+// Unique spawn sounds per enemy type
+function playEnemySpawn(type) {
+  const map = { deepone: 'deeponeSpawn', migo: 'migoSpawn', shoggoth: 'shoggothSpawn', starspawn: 'starspawnSpawn', cultist: 'cultistSpawn' };
+  if (map[type]) playSfx(map[type]);
+}
+
+// Unique landing sounds per enemy type
+function playEnemyLand(type) {
+  const map = { deepone: 'deeponeLand', migo: 'migoLand', shoggoth: 'shoggothLand', starspawn: 'starspawnLand', cultist: 'cultistLand' };
+  if (map[type]) playSfx(map[type]);
+}
+
+// Ship engine sound (looping while ship is on screen)
+function startShipEngine() {
+  if (!audioReady) return;
+  shipEngineAudio.currentTime = 0;
+  shipEngineAudio.play().catch(() => {});
+}
+
+function stopShipEngine() {
+  shipEngineAudio.pause();
+  shipEngineAudio.currentTime = 0;
+}
+
+// ------------------------------------------------------------
+// SECTION 24: GAME LOOP
+// ------------------------------------------------------------
+
+let lastTime = 0;
+const TARGET_FPS = 60;
+const FRAME_TIME = 1000 / TARGET_FPS;
+let accumulator = 0;
+
+function gameLoop(timestamp) {
+  const delta = timestamp - lastTime;
+  lastTime = timestamp;
+  accumulator += delta;
+
+  // Fixed timestep updates
+  while (accumulator >= FRAME_TIME) {
+    update();
+    accumulator -= FRAME_TIME;
+  }
+
+  // Sub-frame interpolation factor (0 to 1 between ticks)
+  game.interpFactor = accumulator / FRAME_TIME;
+
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+// ------------------------------------------------------------
+// SECTION 25: QR CODE GENERATION
+// ------------------------------------------------------------
+
+function generateQR() {
+  try {
+    if (typeof qrcode !== 'undefined') {
+      const qr = qrcode(0, 'M');
+      qr.addData('https://www.paypal.com/donate/?hosted_button_id=HDD77QKGC6XXN');
+      qr.make();
+      const qrEl = document.getElementById('qr-code');
+      if (qrEl) {
+        qrEl.innerHTML = qr.createImgTag(2, 0);
+      }
+    }
+  } catch (e) {
+    // QR generation failed silently
+  }
+}
+
+// ------------------------------------------------------------
+// SECTION 26: BOOTSTRAP
+// ------------------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', () => {
+  generateQR();
+  lastTime = performance.now();
+  requestAnimationFrame(gameLoop);
+});
+
+// Initialize audio on first user interaction
+document.addEventListener('click', initAudio, { once: true });
+document.addEventListener('keydown', initAudio, { once: true });
+document.addEventListener('touchstart', initAudio, { once: true });
+
+</script>
+</body>
+</html>
